@@ -1,24 +1,44 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useSalaryCalculator } from "../utils/useSalaryCalculator";
 
-const Inputs = ({ setMonthlySalary, setAllowance, setSector, setPeriod }) => {
-	const [activeSector, setActiveSector] = useState("private");
-	const [activePeriod, setActivePeriod] = useState("monthly");
-	const [allowanceTaxable, setAllowanceTaxable] = useState(false);
+const Inputs = ({
+	setMonthlySalary,
+	setAllowance,
+	setTakeHomePay,
+	setWithholdingTax,
+	setSector,
+}) => {
+	const {
+		activeSector,
+		activePeriod,
+		allowanceTaxable,
+		monthlySalary,
+		allowance,
+		handleSalaryChange,
+		handleAllowanceChange,
+		handleSectorChange,
+		handlePeriodChange,
+		handleTaxableChange,
+	} = useSalaryCalculator(
+		setMonthlySalary,
+		setAllowance,
+		setTakeHomePay,
+		setWithholdingTax
+	);
 
-	const handleSalaryChange = (e) => setMonthlySalary(e.target.value);
-	const handleAllowanceChange = (e) => setAllowance(e.target.value);
-	const handleSectorChange = (sector) => {
-		setActiveSector(sector);
+	const handleSectorClick = (sector) => {
+		handleSectorChange(sector);
 		setSector(sector);
 	};
-	const handlePeriodChange = (period) => {
-		setActivePeriod(period);
-		setPeriod(period);
-	};
-	const handleTaxableChange = (taxable) => {
-		setAllowanceTaxable(taxable);
-	};
+
+	const renderButton = (label, isActive, onClick) => (
+		<button
+			onClick={onClick}
+			className={`btn ${isActive ? "btn-active" : "btn-inactive"}`}
+		>
+			{label.charAt(0).toUpperCase() + label.slice(1)}
+		</button>
+	);
 
 	return (
 		<div className="p-6 rounded-lg">
@@ -29,22 +49,19 @@ const Inputs = ({ setMonthlySalary, setAllowance, setSector, setPeriod }) => {
 					type="text"
 					className="input-field"
 					placeholder="0.00"
+					value={monthlySalary}
 					onChange={handleSalaryChange}
 				/>
 			</div>
 
 			<label className="label">Sector</label>
 			<div className="flex mt-2 space-x-2">
-				{["private", "public"].map((sector) => (
-					<button
-						key={sector}
-						onClick={() => handleSectorChange(sector)}
-						className={`${"btn"} ${
-							activeSector === sector ? "btn-active" : "btn-inactive"
-						}`}
-					>
-						{sector.charAt(0).toUpperCase() + sector.slice(1)}
-					</button>
+				{["private", "public"].map((sector, index) => (
+					<div key={index}>
+						{renderButton(sector, activeSector === sector, () =>
+							handleSectorClick(sector)
+						)}
+					</div>
 				))}
 			</div>
 
@@ -55,6 +72,7 @@ const Inputs = ({ setMonthlySalary, setAllowance, setSector, setPeriod }) => {
 					type="text"
 					className="input-field"
 					placeholder="(optional)"
+					value={allowance}
 					onChange={handleAllowanceChange}
 				/>
 			</div>
@@ -62,30 +80,22 @@ const Inputs = ({ setMonthlySalary, setAllowance, setSector, setPeriod }) => {
 			<label className="label">Is Allowance Taxable?</label>
 			<div className="flex mt-2 space-x-2">
 				{["Taxable", "Non-Taxable"].map((type, index) => (
-					<button
-						key={type}
-						onClick={() => handleTaxableChange(index === 0)}
-						className={`${"btn"} ${
-							allowanceTaxable === (index === 0) ? "btn-active" : "btn-inactive"
-						}`}
-					>
-						{type}
-					</button>
+					<div key={index}>
+						{renderButton(type, allowanceTaxable === (index === 0), () =>
+							handleTaxableChange(index === 0)
+						)}
+					</div>
 				))}
 			</div>
 
 			<label className="label">Period</label>
 			<div className="flex mt-2 space-x-2">
-				{["monthly", "bi-weekly", "annually"].map((period) => (
-					<button
-						key={period}
-						onClick={() => handlePeriodChange(period)}
-						className={`${"btn"} ${
-							activePeriod === period ? "btn-active" : "btn-inactive"
-						}`}
-					>
-						{period.charAt(0).toUpperCase() + period.slice(1)}
-					</button>
+				{["monthly", "bi-weekly", "annually"].map((period, index) => (
+					<div key={index}>
+						{renderButton(period, activePeriod === period, () =>
+							handlePeriodChange(period)
+						)}
+					</div>
 				))}
 			</div>
 		</div>
@@ -96,7 +106,8 @@ Inputs.propTypes = {
 	setMonthlySalary: PropTypes.func.isRequired,
 	setAllowance: PropTypes.func.isRequired,
 	setSector: PropTypes.func.isRequired,
-	setPeriod: PropTypes.func.isRequired,
+	setTakeHomePay: PropTypes.func.isRequired,
+	setWithholdingTax: PropTypes.func.isRequired,
 };
 
 export default Inputs;

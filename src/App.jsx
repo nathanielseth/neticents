@@ -8,10 +8,12 @@ const App = () => {
 	const [allowanceTaxable, setAllowanceTaxable] = useState(false);
 	const [sector, setSector] = useState("private");
 	const [period, setPeriod] = useState("monthly");
+	const [takeHomePay, setTakeHomePay] = useState(0);
+	const [withholdingTax, setWithholdingTax] = useState(0);
 
 	return (
-		<div className="flex items-center justify-center h-screen bg-white text-gray-900">
-			<div className="max-w-4xl w-full">
+		<div className="min-h-screen bg-white text-gray-900 flex items-center justify-center p-4 mt-12 mb-12 md:mt-0 md:mb-0">
+			<div className="max-w-4xl w-full overflow-auto">
 				<p className="text-center font-bold text-[#7f2ffa]">
 					INCOME TAX CALCULATOR
 				</p>
@@ -30,17 +32,22 @@ const App = () => {
 							setAllowanceTaxable={setAllowanceTaxable}
 							setSector={setSector}
 							setPeriod={setPeriod}
+							setTakeHomePay={setTakeHomePay}
 							allowanceTaxable={allowanceTaxable}
+							setWithholdingTax={setWithholdingTax}
 						/>
 					</div>
 
-					<div className="p-2 ">
+					<div className="p-2">
 						<Summary
 							monthlySalary={monthlySalary}
 							allowance={allowance}
 							sector={sector}
 							period={period}
 							allowanceTaxable={allowanceTaxable}
+							takeHomePay={takeHomePay}
+							withholdingTax={withholdingTax}
+							activeSector={sector}
 						/>
 					</div>
 				</div>
