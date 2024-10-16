@@ -1,0 +1,39 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+	margin: 0;
+	background-color: white;
+	color: black;
+}
+
+.btn {
+	@apply py-2 px-4 border border-gray-400 rounded-md text-gray-900 cursor-pointer transition-all;
+}
+
+.btn-active {
+	@apply bg-[#7f2ffa] text-white;
+}
+
+.btn-inactive {
+	@apply bg-transparent;
+}
+
+.input-wrapper {
+	@apply flex items-center mt-2;
+}
+
+.input-prefix {
+	@apply border border-gray-400 px-4 py-2 rounded-l text-gray-900 border-r-0;
+}
+
+.input-field {
+	@apply w-full p-2 border border-gray-400 rounded-r text-black bg-transparent focus:outline-none;
+}
+
+.label {
+	@apply block text-sm text-gray-500 mt-4;
+}
