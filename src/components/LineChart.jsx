@@ -6,70 +6,89 @@ const LineChart = ({ deductions }) => {
 	return (
 		<div className="relative mt-7 w-full h-2 bg-gray-300 rounded-full">
 			{/* Withholding Tax */}
-			<div
-				className="absolute h-full bg-red-500 rounded-l-full"
-				style={{ width: `${getWidthPercentage(deductions.withholdingTax)}%` }}
-				title={`Withholding Tax (${getWidthPercentage(
-					deductions.withholdingTax
-				).toFixed(2)}%)`}
-			></div>
+			{deductions.withholdingTax > 0 && (
+				<div
+					className="absolute h-full bg-red-500 rounded-l-full"
+					style={{ width: `${getWidthPercentage(deductions.withholdingTax)}%` }}
+					title={`Withholding Tax (${getWidthPercentage(
+						deductions.withholdingTax
+					).toFixed(2)}%)`}
+				></div>
+			)}
 
 			{/* GSIS Contribution */}
-			<div
-				className="absolute h-full bg-green-500"
-				style={{
-					width: `${getWidthPercentage(deductions.gsis)}%`,
-					left: `${getWidthPercentage(deductions.withholdingTax)}%`,
-				}}
-				title={`GSIS Contribution (${getWidthPercentage(
-					deductions.gsis
-				).toFixed(2)}%)`}
-			></div>
+			{deductions.gsis > 0 && (
+				<div
+					className="absolute h-full bg-green-500"
+					style={{
+						width: `${getWidthPercentage(deductions.gsis)}%`,
+						left: `${
+							deductions.withholdingTax > 0
+								? getWidthPercentage(deductions.withholdingTax)
+								: 0
+						}%`,
+					}}
+					title={`GSIS Contribution (${getWidthPercentage(
+						deductions.gsis
+					).toFixed(2)}%)`}
+				></div>
+			)}
 
 			{/* SSS Contribution */}
-			<div
-				className="absolute h-full bg-green-500"
-				style={{
-					width: `${getWidthPercentage(deductions.sss)}%`,
-					left: `${getWidthPercentage(
-						deductions.withholdingTax + deductions.gsis
-					)}%`,
-				}}
-				title={`SSS Contribution (${getWidthPercentage(deductions.sss).toFixed(
-					2
-				)}%)`}
-			></div>
+			{deductions.sss > 0 && (
+				<div
+					className="absolute h-full bg-green-500"
+					style={{
+						width: `${getWidthPercentage(deductions.sss)}%`,
+						left: `${
+							getWidthPercentage(deductions.withholdingTax) +
+							(deductions.gsis > 0 ? getWidthPercentage(deductions.gsis) : 0)
+						}%`,
+					}}
+					title={`SSS Contribution (${getWidthPercentage(
+						deductions.sss
+					).toFixed(2)}%)`}
+				></div>
+			)}
 
 			{/* PhilHealth Contribution */}
-			<div
-				className="absolute h-full bg-purple-500"
-				style={{
-					width: `${getWidthPercentage(deductions.philHealth)}%`,
-					left: `${getWidthPercentage(
-						deductions.withholdingTax + deductions.gsis + deductions.sss
-					)}%`,
-				}}
-				title={`PhilHealth Contribution (${getWidthPercentage(
-					deductions.philHealth
-				).toFixed(2)}%)`}
-			></div>
+			{deductions.philHealth > 0 && (
+				<div
+					className="absolute h-full bg-purple-500"
+					style={{
+						width: `${getWidthPercentage(deductions.philHealth)}%`,
+						left: `${
+							getWidthPercentage(deductions.withholdingTax) +
+							(deductions.gsis > 0 ? getWidthPercentage(deductions.gsis) : 0) +
+							(deductions.sss > 0 ? getWidthPercentage(deductions.sss) : 0)
+						}%`,
+					}}
+					title={`PhilHealth Contribution (${getWidthPercentage(
+						deductions.philHealth
+					).toFixed(2)}%)`}
+				></div>
+			)}
 
 			{/* Pag-Ibig Contribution */}
-			<div
-				className="absolute h-full bg-yellow-500 rounded-r-full"
-				style={{
-					width: `${getWidthPercentage(deductions.pagIbig)}%`,
-					left: `${getWidthPercentage(
-						deductions.withholdingTax +
-							deductions.gsis +
-							deductions.sss +
-							deductions.philHealth
-					)}%`,
-				}}
-				title={`Pag-Ibig Contribution (${getWidthPercentage(
-					deductions.pagIbig
-				).toFixed(2)}%)`}
-			></div>
+			{deductions.pagIbig > 0 && (
+				<div
+					className="absolute h-full bg-yellow-500 rounded-r-full"
+					style={{
+						width: `${getWidthPercentage(deductions.pagIbig)}%`,
+						left: `${
+							getWidthPercentage(deductions.withholdingTax) +
+							(deductions.gsis > 0 ? getWidthPercentage(deductions.gsis) : 0) +
+							(deductions.sss > 0 ? getWidthPercentage(deductions.sss) : 0) +
+							(deductions.philHealth > 0
+								? getWidthPercentage(deductions.philHealth)
+								: 0)
+						}%`,
+					}}
+					title={`Pag-Ibig Contribution (${getWidthPercentage(
+						deductions.pagIbig
+					).toFixed(2)}%)`}
+				></div>
+			)}
 		</div>
 	);
 };

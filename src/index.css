@@ -37,3 +37,9 @@ body {
 .label {
 	@apply block text-sm text-gray-500 mt-4;
 }
+
+@layer base {
+	img {
+		display: initial;
+	}
+}

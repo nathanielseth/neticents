@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Inputs from "./components/Inputs";
 import Summary from "./components/Summary";
+import html2pdf from "html2pdf.js";
 
 const App = () => {
 	const [monthlySalary, setMonthlySalary] = useState("");
@@ -9,6 +10,19 @@ const App = () => {
 	const [sector, setSector] = useState("private");
 	const [takeHomePay, setTakeHomePay] = useState(0);
 	const [withholdingTax, setWithholdingTax] = useState(0);
+	const formRef = useRef(null);
+
+	const handleDownload = () => {
+		const element = formRef.current;
+		const opt = {
+			margin: 1,
+			filename: "neticents.pdf",
+			image: { type: "jpeg", quality: 1 },
+			html2canvas: { scale: 0.961 },
+			jsPDF: { unit: "in", format: "letter", orientation: "landscape" },
+		};
+		html2pdf().from(element).set(opt).save();
+	};
 
 	return (
 		<div className="min-h-screen bg-white text-gray-900 flex flex-col">
@@ -24,7 +38,10 @@ const App = () => {
 						Philippine tax rate per RA 10963
 					</p>
 
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+					<div
+						className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 "
+						ref={formRef}
+					>
 						<div>
 							<Inputs
 								setMonthlySalary={setMonthlySalary}
@@ -47,6 +64,14 @@ const App = () => {
 								withholdingTax={withholdingTax}
 								activeSector={sector}
 							/>
+							<div className="mt-4 flex justify-center">
+								<button
+									className="w-full py-3 text-white bg-[#4169e1] rounded-lg transition duration-200"
+									onClick={handleDownload}
+								>
+									Save as PDF
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>

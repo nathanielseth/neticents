@@ -60,10 +60,6 @@ const Summary = ({
 		? numericTakeHomePay * 12
 		: numericTakeHomePay;
 
-	const handleDownload = () => {
-		alert("not implemented yet");
-	};
-
 	return (
 		<div className="relative mt-6">
 			<div
@@ -134,15 +130,6 @@ const Summary = ({
 						<span>₱{numberFormat(displayedTotalDeductions.toFixed(2))}</span>
 					</div>
 				</div>
-			</div>
-
-			<div className="mt-4 flex justify-center">
-				<button
-					className="w-full py-3 text-white bg-[#4169e1] rounded-lg transition duration-200"
-					onClick={handleDownload}
-				>
-					Save as PDF
-				</button>
 			</div>
 		</div>
 	);
