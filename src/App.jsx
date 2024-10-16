@@ -11,44 +11,57 @@ const App = () => {
 	const [withholdingTax, setWithholdingTax] = useState(0);
 
 	return (
-		<div className="min-h-screen bg-white text-gray-900 flex items-center justify-center p-4 mt-12 mb-12 md:mt-0 md:mb-0">
-			<div className="max-w-4xl w-full overflow-auto">
-				<p className="text-center font-bold text-[#7f2ffa]">
-					INCOME TAX CALCULATOR
-				</p>
-				<h2 className="text-3xl font-bold text-center text-black mt-2">
-					How much are they taking from you?
-				</h2>
-				<p className="text-center text-gray-600 mt-3">
-					Philippine tax rate per RA 10963
-				</p>
+		<div className="min-h-screen bg-white text-gray-900 flex flex-col">
+			<div className="flex-grow flex flex-col items-center justify-center p-4 mt-12 mb-12 md:mt-0 md:mb-0">
+				<div className="max-w-4xl w-full overflow-auto mb-8">
+					<p className="text-center font-bold text-[#4169e1]">
+						INCOME TAX CALCULATOR
+					</p>
+					<h2 className="text-3xl font-bold text-center text-black mt-2">
+						How much are they taking from you?
+					</h2>
+					<p className="text-center text-gray-500 mt-3">
+						Philippine tax rate per RA 10963
+					</p>
 
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-					<div>
-						<Inputs
-							setMonthlySalary={setMonthlySalary}
-							setAllowance={setAllowance}
-							setAllowanceTaxable={setAllowanceTaxable}
-							setSector={setSector}
-							setTakeHomePay={setTakeHomePay}
-							allowanceTaxable={allowanceTaxable}
-							setWithholdingTax={setWithholdingTax}
-						/>
-					</div>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+						<div>
+							<Inputs
+								setMonthlySalary={setMonthlySalary}
+								setAllowance={setAllowance}
+								setAllowanceTaxable={setAllowanceTaxable}
+								setSector={setSector}
+								setTakeHomePay={setTakeHomePay}
+								allowanceTaxable={allowanceTaxable}
+								setWithholdingTax={setWithholdingTax}
+							/>
+						</div>
 
-					<div className="p-2">
-						<Summary
-							monthlySalary={monthlySalary}
-							allowance={allowance}
-							sector={sector}
-							allowanceTaxable={allowanceTaxable}
-							takeHomePay={takeHomePay}
-							withholdingTax={withholdingTax}
-							activeSector={sector}
-						/>
+						<div className="p-2">
+							<Summary
+								monthlySalary={monthlySalary}
+								allowance={allowance}
+								sector={sector}
+								allowanceTaxable={allowanceTaxable}
+								takeHomePay={takeHomePay}
+								withholdingTax={withholdingTax}
+								activeSector={sector}
+							/>
+						</div>
 					</div>
 				</div>
 			</div>
+
+			<footer className="w-full bg-white p-4 text-center text-sm md:fixed md:bottom-0">
+				<a
+					href="https://nathanielseth.github.io/portfolio/"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-zinc-400"
+				>
+					made by nathanielseth.dev
+				</a>
+			</footer>
 		</div>
 	);
 };

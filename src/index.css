@@ -15,7 +15,7 @@ body {
 }
 
 .btn-active {
-	@apply bg-[#7f2ffa] text-white;
+	@apply bg-[#4169e1] text-white;
 }
 
 .btn-inactive {

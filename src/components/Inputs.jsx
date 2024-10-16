@@ -85,6 +85,13 @@ const Inputs = ({
 					</div>
 				))}
 			</div>
+
+			<div className="mt-9 text-sm text-gray-400">
+				Note: Night differential and other special factors are not included in
+				this calculation. This web application serves as a tool for estimation
+				purposes and should not be considered a replacement for payroll
+				professionals.
+			</div>
 		</div>
 	);
 };

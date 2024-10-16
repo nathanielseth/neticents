@@ -1,3 +1,4 @@
+import { useState } from "react";
 import PropTypes from "prop-types";
 import LineChart from "./LineChart";
 import {
@@ -14,20 +15,25 @@ const Summary = ({
 	monthlySalary,
 	activeSector,
 }) => {
+	const [isAnnual, setIsAnnual] = useState(false);
+
 	const numericTakeHomePay = parseFloat(takeHomePay) || 0;
 	const numericMonthlySalary = parseFloat(monthlySalary) || 0;
 
-	const sss = computeSSS(numericMonthlySalary).sss;
-	const mpf = computeSSS(numericMonthlySalary).mpf;
 	const deductions = {
-		withholdingTax: parseFloat(withholdingTax) || 0,
-		gsis: computeGSIS(numericMonthlySalary),
-		sss: sss + mpf,
+		withholdingTax:
+			numericTakeHomePay > 0 ? parseFloat(withholdingTax) || 0 : 0,
+		gsis: activeSector === "public" ? computeGSIS(numericMonthlySalary) : 0,
+		sss:
+			activeSector === "private"
+				? computeSSS(numericMonthlySalary).sss +
+				  computeSSS(numericMonthlySalary).mpf
+				: 0,
 		philHealth: computePhilHealth(numericMonthlySalary),
 		pagIbig: computePagIbig(),
-		total: 0,
 	};
 
+	// Filter out deductions based on the active sector
 	const visibleDeductions = Object.entries(deductions).filter(([key]) => {
 		if (
 			(key === "gsis" && activeSector === "private") ||
@@ -38,10 +44,15 @@ const Summary = ({
 		return true;
 	});
 
-	deductions.total = visibleDeductions.reduce(
+	// Calculate total deductions from visible deductions
+	const totalDeductions = visibleDeductions.reduce(
 		(acc, [, value]) => acc + value,
 		0
 	);
+
+	const displayedTakeHomePay = isAnnual
+		? numericTakeHomePay * 12
+		: numericTakeHomePay;
 
 	const handleDownload = () => {
 		alert("not implemented yet");
@@ -50,32 +61,51 @@ const Summary = ({
 	return (
 		<div className="relative mt-6">
 			<div
-				className="p-6 bg-white rounded-lg border-b-4 border-[#7f2ffa]"
+				className="p-6 bg-white rounded-lg border-b-4 border-[#4169e1]"
 				style={{ boxShadow: "0 -1px 15px rgba(0, 0, 0, 0.15)" }}
 			>
+				<div className="flex justify-center mb-5">
+					<div className="flex items-center space-x-2 bg-gray-200 p-1 rounded-full">
+						<button
+							className={`px-4 py-1 rounded-full ${
+								!isAnnual
+									? "bg-[#4169e1] text-white"
+									: "bg-transparent text-gray-600"
+							}`}
+							onClick={() => setIsAnnual(false)}
+						>
+							Monthly
+						</button>
+						<button
+							className={`px-4 py-1 rounded-full ${
+								isAnnual
+									? "bg-[#4169e1] text-white"
+									: "bg-transparent text-gray-600"
+							}`}
+							onClick={() => setIsAnnual(true)}
+						>
+							Annual
+						</button>
+					</div>
+				</div>
+
 				<h3 className="text-md font-normal text-center text-gray-500 mt-1 mb-1">
 					Take Home Pay:
 				</h3>
 				<div className="grid grid-cols-1 justify-items-center">
-					<h1 className="text-4xl font-bold text-[#7f2ffa]">
+					<h1 className="text-4xl font-bold text-[#4169e1]">
 						₱
-						{numericTakeHomePay >= 0
-							? numericTakeHomePay.toLocaleString("en-US", {
-									minimumFractionDigits: 2,
-							  })
-							: "0.00"}
+						{displayedTakeHomePay.toLocaleString("en-US", {
+							minimumFractionDigits: 2,
+						})}
 					</h1>
 				</div>
 
-				<LineChart deductions={deductions} />
+				<LineChart deductions={{ ...deductions, total: totalDeductions }} />
 
 				<div className="mt-6 text-gray-900 space-y-4">
-					{Object.entries(deductions).map(([key, value]) => {
-						if (
-							(key === "gsis" && activeSector === "private") ||
-							(key === "sss" && activeSector === "public")
-						)
-							return null;
+					{visibleDeductions.map(([key, value]) => {
+						const displayedValue = isAnnual ? value * 12 : value;
 
 						return (
 							<div className="flex justify-between items-center" key={key}>
@@ -88,16 +118,21 @@ const Summary = ({
 									</span>
 								</span>
 								<span className="font-bold">
-									₱{numberFormat(value.toFixed(2))}
+									₱{numberFormat(displayedValue.toFixed(2))}
 								</span>
 							</div>
 						);
 					})}
+					<div className="flex justify-between items-center font-bold">
+						<span>Total Deductions</span>
+						<span>₱{numberFormat(totalDeductions.toFixed(2))}</span>
+					</div>
 				</div>
 			</div>
+
 			<div className="mt-4 flex justify-center">
 				<button
-					className="w-full py-3 text-white bg-[#7f2ffa] rounded-lg transition duration-200"
+					className="w-full py-3 text-white bg-[#4169e1] rounded-lg transition duration-200"
 					onClick={handleDownload}
 				>
 					Save as PDF
@@ -109,12 +144,12 @@ const Summary = ({
 
 const getColor = (key) => {
 	const colors = {
-		withholdingTax: "bg-purple-500",
-		gsis: "bg-gray-400",
-		sss: "bg-gray-400",
-		philHealth: "bg-yellow-500",
-		pagIbig: "bg-blue-500",
-		total: "bg-red-500",
+		withholdingTax: "bg-red-500",
+		gsis: "bg-green-500",
+		sss: "bg-green-500",
+		philHealth: "bg-purple-500",
+		pagIbig: "bg-yellow-500",
+		total: "bg-blue-500",
 	};
 	return colors[key];
 };
