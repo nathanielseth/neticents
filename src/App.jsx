@@ -7,7 +7,6 @@ const App = () => {
 	const [allowance, setAllowance] = useState("");
 	const [allowanceTaxable, setAllowanceTaxable] = useState(false);
 	const [sector, setSector] = useState("private");
-	const [period, setPeriod] = useState("monthly");
 	const [takeHomePay, setTakeHomePay] = useState(0);
 	const [withholdingTax, setWithholdingTax] = useState(0);
 
@@ -31,7 +30,6 @@ const App = () => {
 							setAllowance={setAllowance}
 							setAllowanceTaxable={setAllowanceTaxable}
 							setSector={setSector}
-							setPeriod={setPeriod}
 							setTakeHomePay={setTakeHomePay}
 							allowanceTaxable={allowanceTaxable}
 							setWithholdingTax={setWithholdingTax}
@@ -43,7 +41,6 @@ const App = () => {
 							monthlySalary={monthlySalary}
 							allowance={allowance}
 							sector={sector}
-							period={period}
 							allowanceTaxable={allowanceTaxable}
 							takeHomePay={takeHomePay}
 							withholdingTax={withholdingTax}

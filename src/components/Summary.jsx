@@ -13,12 +13,12 @@ const Summary = ({
 	withholdingTax,
 	monthlySalary,
 	activeSector,
-	activePeriod,
 }) => {
 	const numericTakeHomePay = parseFloat(takeHomePay) || 0;
 	const numericMonthlySalary = parseFloat(monthlySalary) || 0;
 
-	const { sss, mpf } = computeSSS(numericMonthlySalary);
+	const sss = computeSSS(numericMonthlySalary).sss;
+	const mpf = computeSSS(numericMonthlySalary).mpf;
 	const deductions = {
 		withholdingTax: parseFloat(withholdingTax) || 0,
 		gsis: computeGSIS(numericMonthlySalary),
@@ -38,22 +38,10 @@ const Summary = ({
 		return true;
 	});
 
-	if (activePeriod === "annually") {
-		deductions.total = visibleDeductions.reduce(
-			(acc, [, value]) => acc + value * 12,
-			0
-		);
-	} else if (activePeriod === "bi-weekly") {
-		deductions.total = visibleDeductions.reduce(
-			(acc, [, value]) => acc + value / 2,
-			0
-		);
-	} else {
-		deductions.total = visibleDeductions.reduce(
-			(acc, [, value]) => acc + value,
-			0
-		);
-	}
+	deductions.total = visibleDeductions.reduce(
+		(acc, [, value]) => acc + value,
+		0
+	);
 
 	const handleDownload = () => {
 		alert("not implemented yet");
@@ -148,7 +136,6 @@ Summary.propTypes = {
 	withholdingTax: PropTypes.number.isRequired,
 	monthlySalary: PropTypes.number.isRequired,
 	activeSector: PropTypes.string.isRequired,
-	activePeriod: PropTypes.string.isRequired,
 };
 
 export default Summary;

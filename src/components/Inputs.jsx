@@ -10,14 +10,12 @@ const Inputs = ({
 }) => {
 	const {
 		activeSector,
-		activePeriod,
 		allowanceTaxable,
 		monthlySalary,
 		allowance,
 		handleSalaryChange,
 		handleAllowanceChange,
 		handleSectorChange,
-		handlePeriodChange,
 		handleTaxableChange,
 	} = useSalaryCalculator(
 		setMonthlySalary,
@@ -83,17 +81,6 @@ const Inputs = ({
 					<div key={index}>
 						{renderButton(type, allowanceTaxable === (index === 0), () =>
 							handleTaxableChange(index === 0)
-						)}
-					</div>
-				))}
-			</div>
-
-			<label className="label">Period</label>
-			<div className="flex mt-2 space-x-2">
-				{["monthly", "bi-weekly", "annually"].map((period, index) => (
-					<div key={index}>
-						{renderButton(period, activePeriod === period, () =>
-							handlePeriodChange(period)
 						)}
 					</div>
 				))}
