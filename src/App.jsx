@@ -14,12 +14,17 @@ const App = () => {
 
 	const handleDownload = () => {
 		const element = formRef.current;
+		const isMobile = window.innerWidth < 768;
 		const opt = {
-			margin: 1,
+			margin: isMobile ? 0 : 1,
 			filename: "neticents.pdf",
 			image: { type: "jpeg", quality: 1 },
-			html2canvas: { scale: 0.961 },
-			jsPDF: { unit: "in", format: "letter", orientation: "landscape" },
+			html2canvas: { scale: isMobile ? 0.85 : 0.961 },
+			jsPDF: {
+				unit: "in",
+				format: "letter",
+				orientation: isMobile ? "portrait" : "landscape",
+			},
 		};
 		html2pdf().from(element).set(opt).save();
 	};
@@ -39,7 +44,7 @@ const App = () => {
 					</p>
 
 					<div
-						className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 "
+						className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-3 "
 						ref={formRef}
 					>
 						<div>
