@@ -28,20 +28,29 @@ const Summary = ({
 		total: 0,
 	};
 
-	// Adjust deductions based on period
+	const visibleDeductions = Object.entries(deductions).filter(([key]) => {
+		if (
+			(key === "gsis" && activeSector === "private") ||
+			(key === "sss" && activeSector === "public")
+		) {
+			return false;
+		}
+		return true;
+	});
+
 	if (activePeriod === "annually") {
-		deductions.total = Object.values(deductions).reduce(
-			(acc, value) => acc + value * 12,
+		deductions.total = visibleDeductions.reduce(
+			(acc, [, value]) => acc + value * 12,
 			0
 		);
 	} else if (activePeriod === "bi-weekly") {
-		deductions.total = Object.values(deductions).reduce(
-			(acc, value) => acc + value / 2,
+		deductions.total = visibleDeductions.reduce(
+			(acc, [, value]) => acc + value / 2,
 			0
 		);
 	} else {
-		deductions.total = Object.values(deductions).reduce(
-			(acc, value) => acc + value,
+		deductions.total = visibleDeductions.reduce(
+			(acc, [, value]) => acc + value,
 			0
 		);
 	}
