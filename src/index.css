@@ -43,3 +43,11 @@ body {
 		display: initial;
 	}
 }
+
+.dark-mode {
+	color: white;
+}
+
+.light-mode {
+	color: black;
+}

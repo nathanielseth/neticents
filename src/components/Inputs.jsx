@@ -7,6 +7,7 @@ const Inputs = ({
 	setTakeHomePay,
 	setWithholdingTax,
 	setSector,
+	theme,
 }) => {
 	const {
 		activeSector,
@@ -32,20 +33,36 @@ const Inputs = ({
 	const renderButton = (label, isActive, onClick) => (
 		<button
 			onClick={onClick}
-			className={`btn ${isActive ? "btn-active" : "btn-inactive"}`}
+			className={`btn ${isActive ? "btn-active" : "btn-inactive"} ${
+				theme === "dark" ? "dark-mode" : ""
+			}`} // Add theme-based styles
 		>
 			{label.charAt(0).toUpperCase() + label.slice(1)}
 		</button>
 	);
 
+	const isMobile = window.innerWidth < 768;
+
 	return (
-		<div className="p-6 rounded-lg">
+		<div
+			className={`p-6 rounded-lg ${
+				theme === "dark" ? "bg-gray-900  text-white" : "bg-white text-gray-900"
+			}`}
+		>
 			<label className="label">Monthly Basic Pay</label>
 			<div className="input-wrapper">
-				<span className="input-prefix">PHP</span>
+				<span
+					className={`input-prefix ${
+						theme === "dark" ? "dark-mode" : "light-mode"
+					}`}
+				>
+					PHP
+				</span>
 				<input
 					type="text"
-					className="input-field"
+					className={`input-field ${
+						theme === "dark" ? "dark-mode" : "light-mode"
+					}`}
 					placeholder="0.00"
 					value={monthlySalary}
 					onChange={handleSalaryChange}
@@ -66,11 +83,16 @@ const Inputs = ({
 
 			<label className="label">Allowance</label>
 			<div className="input-wrapper">
-				<span className="input-prefix">PHP</span>
+				<span
+					className={`input-prefix ${
+						theme === "dark" ? "dark-mode" : "light-mode"
+					}`}
+				>
+					PHP
+				</span>
 				<input
 					type="text"
-					className="input-field"
-					placeholder="(optional)"
+					className={`input-field ${theme === "dark" ? "dark-mode" : ""}`}
 					value={allowance}
 					onChange={handleAllowanceChange}
 					maxLength={14}
@@ -88,12 +110,18 @@ const Inputs = ({
 				))}
 			</div>
 
-			<div className="mt-9 text-sm text-gray-400">
-				Note: Overtime and other special factors are not included in this
-				calculation. This web application serves as a tool for estimation
-				purposes and should not be considered a replacement for payroll
-				professionals.
-			</div>
+			{!isMobile && (
+				<div
+					className={`mt-9 text-sm ${
+						theme === "dark" ? "text-gray-400" : "text-gray-600"
+					}`}
+				>
+					Note: Overtime and other special factors are not included in this
+					calculation. This web application serves as a tool for estimation
+					purposes and should not be considered a replacement for payroll
+					professionals.
+				</div>
+			)}
 		</div>
 	);
 };
@@ -104,6 +132,7 @@ Inputs.propTypes = {
 	setSector: PropTypes.func.isRequired,
 	setTakeHomePay: PropTypes.func.isRequired,
 	setWithholdingTax: PropTypes.func.isRequired,
+	theme: PropTypes.string.isRequired,
 };
 
 export default Inputs;
