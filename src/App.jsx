@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import Inputs from "./components/Inputs";
 import Summary from "./components/Summary";
 import { useTheme } from "./components/ThemeProvider";
-import html2pdf from "html2pdf.js";
 import { HiSun, HiMoon } from "react-icons/hi";
 
 const App = () => {
@@ -16,20 +15,24 @@ const App = () => {
 	const [withholdingTax, setWithholdingTax] = useState(0);
 	const formRef = useRef(null);
 
-	const handleDownload = () => {
+	const handleDownload = async () => {
 		const element = formRef.current;
 		const isMobile = window.innerWidth < 768;
+
+		const html2pdf = (await import("html2pdf.js")).default;
+
 		const opt = {
 			margin: isMobile ? 0 : 1,
 			filename: "neticents.pdf",
-			image: { type: "jpeg", quality: 1 },
-			html2canvas: { scale: isMobile ? 0.85 : 0.961 },
+			image: { type: "png", quality: 1 },
+			html2canvas: { scale: isMobile ? 0.85 : 0.961, letterRendering: true },
 			jsPDF: {
 				unit: "in",
 				format: "letter",
 				orientation: isMobile ? "portrait" : "landscape",
 			},
 		};
+
 		html2pdf().from(element).set(opt).save();
 	};
 
@@ -75,7 +78,7 @@ const App = () => {
 								withholdingTax={withholdingTax}
 								activeSector={sector}
 							/>
-							<div className="mt-4 flex justify-center">
+							<div className="mt-4 flex justify-center" data-html2canvas-ignore>
 								<button
 									className="w-full py-3 text-white bg-[#4169e1] dark:bg-blue-600 rounded-lg transition duration-100"
 									onClick={handleDownload}

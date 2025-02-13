@@ -94,6 +94,7 @@ const Inputs = ({
 					type="text"
 					className={`input-field ${theme === "dark" ? "dark-mode" : ""}`}
 					value={allowance}
+					placeholder="0.00"
 					onChange={handleAllowanceChange}
 					maxLength={14}
 				/>
@@ -115,6 +116,7 @@ const Inputs = ({
 					className={`mt-9 text-sm ${
 						theme === "dark" ? "text-gray-400" : "text-gray-600"
 					}`}
+					data-html2canvas-ignore
 				>
 					Note: Overtime and other special factors are not included in this
 					calculation. This web application serves as a tool for estimation
