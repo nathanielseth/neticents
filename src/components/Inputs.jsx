@@ -35,11 +35,24 @@ const Inputs = ({
 			onClick={onClick}
 			className={`btn ${isActive ? "btn-active" : "btn-inactive"} ${
 				theme === "dark" ? "dark-mode" : ""
-			}`} // Add theme-based styles
+			}`}
 		>
-			{label.charAt(0).toUpperCase() + label.slice(1)}
+			{label}
 		</button>
 	);
+
+	const getSectorLabel = (sector) => {
+		switch (sector) {
+			case "private":
+				return "Private";
+			case "public":
+				return "Public";
+			case "selfemployed":
+				return "Self-Employed";
+			default:
+				return sector.charAt(0).toUpperCase() + sector.slice(1);
+		}
+	};
 
 	const isMobile = window.innerWidth < 768;
 
@@ -70,11 +83,11 @@ const Inputs = ({
 				/>
 			</div>
 
-			<label className="label">Sector</label>
-			<div className="flex mt-2 space-x-2">
-				{["private", "public"].map((sector, index) => (
-					<div key={index}>
-						{renderButton(sector, activeSector === sector, () =>
+			<label className="label">Employment Type</label>
+			<div className="flex mt-2 space-x-2 flex-wrap gap-y-2">
+				{["private", "public", "selfemployed"].map((sector) => (
+					<div key={sector}>
+						{renderButton(getSectorLabel(sector), activeSector === sector, () =>
 							handleSectorClick(sector)
 						)}
 					</div>

@@ -104,23 +104,25 @@ const SSS_MATRIX = [
 	[34750, Infinity, 1000.0, 750.0],
 ];
 
-export const computeSSS = (salary) => {
+export const computeSSS = (salary, isSelfEmployed = false) => {
 	if (isNaN(salary)) {
 		return { sss: 0, mpf: 0 };
 	}
 
+	const multiplier = isSelfEmployed ? 3 : 1;
+
 	if (salary < 5250.0) {
 		const applicableMsc = 5000;
 		return {
-			sss: applicableMsc * 0.05,
+			sss: applicableMsc * 0.05 * multiplier,
 			mpf: 0,
 		};
 	}
 
 	if (salary >= 34750.0) {
 		const applicableMsc = 35000;
-		const sss = 20000 * 0.05;
-		const mpf = (applicableMsc - 20000) * 0.05;
+		const sss = 20000 * 0.05 * multiplier;
+		const mpf = (applicableMsc - 20000) * 0.05 * multiplier;
 		return {
 			sss,
 			mpf: parseFloat(mpf.toFixed(2)),
@@ -129,7 +131,10 @@ export const computeSSS = (salary) => {
 
 	for (const [lower, upper, sss, mpf] of SSS_MATRIX) {
 		if (salary >= lower && salary <= upper) {
-			return { sss, mpf };
+			return {
+				sss: sss * multiplier,
+				mpf: mpf * multiplier,
+			};
 		}
 	}
 
@@ -137,21 +142,28 @@ export const computeSSS = (salary) => {
 };
 
 // jan 2024 rates
-const PHILHEALTH_BRACKETS = [
-	[null, 10000, () => 500],
-	[10000.01, 99999.99, (monthly) => monthly * 0.05],
-	[100000, null, () => 5000],
-];
-
-const isInBracket = (lower, upper) => (income) =>
-	(isNaN(lower) || income >= lower) && (isNaN(upper) || income <= upper);
-
-export const computePhilHealth = (monthly) => {
-	for (const [lower, upper, calculator] of PHILHEALTH_BRACKETS) {
-		if (isInBracket(lower, upper)(monthly)) {
-			return calculator(monthly) * 0.5;
-		}
+export const computePhilHealth = (monthly, isSelfEmployed = false) => {
+	if (!monthly || isNaN(monthly) || monthly <= 0) {
+		return 0;
 	}
+
+	const multiplier = isSelfEmployed ? 2 : 1;
+
+	// first bracket: 0 to 10,000
+	if (monthly <= 10000) {
+		return 500 * 0.5 * multiplier; // Employee: 250, Self-employed: 500
+	}
+
+	// second bracket: 10,000.01 to 99,999.99 = 5% of monthly
+	if (monthly <= 99999.99) {
+		return monthly * 0.05 * 0.5 * multiplier;
+	}
+
+	// third bracket: 100,000 and above
+	if (monthly >= 100000) {
+		return 5000 * 0.5 * multiplier; // Employee: 2500, Self-employed: 5000
+	}
+
 	return 0;
 };
 

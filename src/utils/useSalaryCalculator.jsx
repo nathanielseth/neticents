@@ -32,25 +32,33 @@ export const useSalaryCalculator = (
 				sss: 0,
 				mpf: 0,
 				gsis: 0,
-				philHealth: computePhilHealth(taxableSalary),
+				philHealth: 0,
 				pagIbig: computePagIbig(taxableSalary),
 			};
 
-			if (sector === "private") {
-				const sssResult = computeSSS(taxableSalary);
+			// Determine contribution rates based on sector
+			const isSelfEmployed = sector === "selfemployed";
+
+			if (sector === "private" || sector === "selfemployed") {
+				const sssResult = computeSSS(taxableSalary, isSelfEmployed);
 				contributions.sss = sssResult.sss;
 				contributions.mpf = sssResult.mpf;
-			} else {
+				contributions.philHealth = computePhilHealth(
+					taxableSalary,
+					isSelfEmployed
+				);
+			} else if (sector === "public") {
 				contributions.gsis = computeGSIS(taxableSalary);
+				contributions.philHealth = computePhilHealth(taxableSalary, false); // Public employees share 50/50
 			}
 
 			const totalContributions =
-				sector === "private"
-					? contributions.sss +
-					  contributions.mpf +
+				sector === "public"
+					? contributions.gsis +
 					  contributions.philHealth +
 					  contributions.pagIbig
-					: contributions.gsis +
+					: contributions.sss +
+					  contributions.mpf +
 					  contributions.philHealth +
 					  contributions.pagIbig;
 

@@ -21,6 +21,10 @@ const Summary = ({
 	const numericTakeHomePay = parseFloat(takeHomePay) || 0;
 	const numericMonthlySalary = parseFloat(monthlySalary) || 0;
 
+	const isSelfEmployed = activeSector === "selfemployed";
+	const isPrivateSector =
+		activeSector === "private" || activeSector === "selfemployed";
+
 	const deductions = {
 		withholdingTax:
 			numericTakeHomePay > 0 ? parseFloat(withholdingTax) || 0 : 0,
@@ -29,20 +33,22 @@ const Summary = ({
 				? computeGSIS(numericMonthlySalary)
 				: 0,
 		sss:
-			numericTakeHomePay > 0 && activeSector === "private"
-				? computeSSS(numericMonthlySalary).sss +
-				  computeSSS(numericMonthlySalary).mpf
+			numericTakeHomePay > 0 && isPrivateSector
+				? computeSSS(numericMonthlySalary, isSelfEmployed).sss +
+				  computeSSS(numericMonthlySalary, isSelfEmployed).mpf
 				: 0,
 		philHealth:
-			numericTakeHomePay > 0 ? computePhilHealth(numericMonthlySalary) : 0,
+			numericTakeHomePay > 0
+				? computePhilHealth(numericMonthlySalary, isSelfEmployed)
+				: 0,
 		pagIbig: numericTakeHomePay > 0 ? computePagIbig(numericMonthlySalary) : 0,
 	};
 
 	const visibleDeductions = Object.entries(deductions).filter(([key]) => {
-		if (
-			(key === "gsis" && activeSector === "private") ||
-			(key === "sss" && activeSector === "public")
-		) {
+		if (key === "gsis" && isPrivateSector) {
+			return false;
+		}
+		if (key === "sss" && activeSector === "public") {
 			return false;
 		}
 		return true;
@@ -146,7 +152,7 @@ const Summary = ({
 											theme === "dark" ? "text-gray-300" : "text-zinc-600"
 										}`}
 									>
-										{getLabel(key)}
+										{getLabel(key, isSelfEmployed)}
 									</span>
 								</span>
 								<span className="font-bold">
