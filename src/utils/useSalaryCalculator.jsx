@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
 	handleInput,
 	computeWithholdingTax,
@@ -6,6 +6,7 @@ import {
 	computePhilHealth,
 	computePagIbig,
 	computeGSIS,
+	parseFormattedNumber,
 } from "../utils/calculation";
 
 export const useSalaryCalculator = (
@@ -19,96 +20,124 @@ export const useSalaryCalculator = (
 	const [monthlySalary, setMonthlySalaryValue] = useState("");
 	const [allowance, setAllowanceValue] = useState("");
 
-	const calculate = (salary, allowanceAmount, allowanceTaxable, sector) => {
-		if (allowanceTaxable) salary += allowanceAmount;
+	const calculate = useCallback(
+		(salary, allowanceAmount, isAllowanceTaxable, sector) => {
+			const baseSalary = salary;
+			const taxableSalary = isAllowanceTaxable
+				? salary + allowanceAmount
+				: salary;
+			const annualIncome = taxableSalary * 12;
 
-		const annualIncome = salary * 12;
+			const contributions = {
+				sss: 0,
+				mpf: 0,
+				gsis: 0,
+				philHealth: computePhilHealth(taxableSalary),
+				pagIbig: computePagIbig(taxableSalary),
+			};
 
-		let sss = 0,
-			mpf = 0,
-			gsis = 0;
+			if (sector === "private") {
+				const sssResult = computeSSS(taxableSalary);
+				contributions.sss = sssResult.sss;
+				contributions.mpf = sssResult.mpf;
+			} else {
+				contributions.gsis = computeGSIS(taxableSalary);
+			}
 
-		if (sector === "private") {
-			sss = computeSSS(salary).sss;
-			mpf = computeSSS(salary).mpf;
-		} else {
-			gsis = computeGSIS(salary);
-		}
+			const totalContributions =
+				sector === "private"
+					? contributions.sss +
+					  contributions.mpf +
+					  contributions.philHealth +
+					  contributions.pagIbig
+					: contributions.gsis +
+					  contributions.philHealth +
+					  contributions.pagIbig;
 
-		const philHealth = computePhilHealth(salary);
-		const pagIbig = computePagIbig();
-		const totalDeductions =
-			sector === "private"
-				? sss + mpf + philHealth + pagIbig
-				: gsis + philHealth + pagIbig;
+			const taxableAnnualIncome = annualIncome - totalContributions * 12;
+			const monthlyWithholdingTax = computeWithholdingTax(taxableAnnualIncome);
+			setWithholdingTax(monthlyWithholdingTax);
 
-		const taxableAnnualIncome = annualIncome - totalDeductions * 12;
-		const calculatedWithholdingTax = computeWithholdingTax(taxableAnnualIncome);
-		setWithholdingTax(calculatedWithholdingTax);
+			const totalDeductions = totalContributions + monthlyWithholdingTax;
+			const netPay = baseSalary - totalDeductions;
+			const finalTakeHome = isAllowanceTaxable
+				? Math.max(netPay, 0)
+				: Math.max(netPay + allowanceAmount, 0);
 
-		const finalDeductions = totalDeductions + calculatedWithholdingTax;
-		setTakeHomePay(
-			calculateTakeHomePay(
-				salary,
-				finalDeductions,
-				allowanceAmount,
-				allowanceTaxable
-			)
-		);
-	};
+			setTakeHomePay(parseFloat(finalTakeHome.toFixed(2)));
+		},
+		[setWithholdingTax, setTakeHomePay]
+	);
 
-	const handleSalaryChange = (e) => {
-		const formattedValue = handleInput(e.target.value);
-		setMonthlySalaryValue(formattedValue);
+	const parseValue = useCallback((formattedValue) => {
+		return parseFormattedNumber(formattedValue);
+	}, []);
 
-		const salary = parseFloat(formattedValue.replace(/,/g, "")) || 0;
-		setMonthlySalary(salary);
+	const handleSalaryChange = useCallback(
+		(e) => {
+			const formattedValue = handleInput(e.target.value);
+			setMonthlySalaryValue(formattedValue);
 
-		const allowanceAmount = parseFloat(allowance.replace(/,/g, "")) || 0;
-		calculate(salary, allowanceAmount, allowanceTaxable, activeSector);
-	};
+			const salary = parseValue(formattedValue);
+			const allowanceAmount = parseValue(allowance);
 
-	const handleAllowanceChange = (e) => {
-		const formattedValue = handleInput(e.target.value);
-		setAllowanceValue(formattedValue);
+			setMonthlySalary(salary);
+			calculate(salary, allowanceAmount, allowanceTaxable, activeSector);
+		},
+		[
+			allowance,
+			allowanceTaxable,
+			activeSector,
+			calculate,
+			parseValue,
+			setMonthlySalary,
+		]
+	);
 
-		const allowanceAmount = parseFloat(formattedValue.replace(/,/g, "")) || 0;
-		setAllowance(allowanceAmount);
+	const handleAllowanceChange = useCallback(
+		(e) => {
+			const formattedValue = handleInput(e.target.value);
+			setAllowanceValue(formattedValue);
 
-		const salary = parseFloat(monthlySalary.replace(/,/g, "")) || 0;
-		calculate(salary, allowanceAmount, allowanceTaxable, activeSector);
-	};
+			const allowanceAmount = parseValue(formattedValue);
+			const salary = parseValue(monthlySalary);
 
-	const handleTaxableChange = (taxable) => {
-		setAllowanceTaxable(taxable);
+			setAllowance(allowanceAmount);
+			calculate(salary, allowanceAmount, allowanceTaxable, activeSector);
+		},
+		[
+			monthlySalary,
+			allowanceTaxable,
+			activeSector,
+			calculate,
+			parseValue,
+			setAllowance,
+		]
+	);
 
-		const salary = parseFloat(monthlySalary.replace(/,/g, "")) || 0;
-		const allowanceAmount = parseFloat(allowance.replace(/,/g, "")) || 0;
-		calculate(salary, allowanceAmount, taxable, activeSector);
-	};
+	const handleTaxableChange = useCallback(
+		(taxable) => {
+			setAllowanceTaxable(taxable);
 
-	const calculateTakeHomePay = (
-		salary,
-		totalDeductions,
-		allowanceAmount,
-		allowanceTaxable
-	) => {
-		const takeHomePay = salary - totalDeductions;
-		return allowanceTaxable
-			? takeHomePay > 0
-				? takeHomePay.toFixed(2)
-				: "₱0.00"
-			: takeHomePay + allowanceAmount > 0
-			? (takeHomePay + allowanceAmount).toFixed(2)
-			: "₱0.00";
-	};
+			const salary = parseValue(monthlySalary);
+			const allowanceAmount = parseValue(allowance);
 
-	const handleSectorChange = (sector) => {
-		setActiveSector(sector);
-		const salary = parseFloat(monthlySalary.replace(/,/g, "")) || 0;
-		const allowanceAmount = parseFloat(allowance.replace(/,/g, "")) || 0;
-		calculate(salary, allowanceAmount, allowanceTaxable, sector);
-	};
+			calculate(salary, allowanceAmount, taxable, activeSector);
+		},
+		[monthlySalary, allowance, activeSector, calculate, parseValue]
+	);
+
+	const handleSectorChange = useCallback(
+		(sector) => {
+			setActiveSector(sector);
+
+			const salary = parseValue(monthlySalary);
+			const allowanceAmount = parseValue(allowance);
+
+			calculate(salary, allowanceAmount, allowanceTaxable, sector);
+		},
+		[monthlySalary, allowance, allowanceTaxable, calculate, parseValue]
+	);
 
 	return {
 		activeSector,

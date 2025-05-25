@@ -35,7 +35,7 @@ const Summary = ({
 				: 0,
 		philHealth:
 			numericTakeHomePay > 0 ? computePhilHealth(numericMonthlySalary) : 0,
-		pagIbig: numericTakeHomePay > 0 ? computePagIbig() : 0,
+		pagIbig: numericTakeHomePay > 0 ? computePagIbig(numericMonthlySalary) : 0,
 	};
 
 	const visibleDeductions = Object.entries(deductions).filter(([key]) => {

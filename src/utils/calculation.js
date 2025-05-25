@@ -10,117 +10,155 @@ export const handleInput = (value) => {
 	return numberFormat(parseFormattedNumber(value));
 };
 
-const bracket = (lower, upper) => (income) =>
-	(isNaN(lower) || income >= lower) && (isNaN(upper) || income <= upper);
-
+// jan 2023 rates
 export const computeWithholdingTax = (taxableAnnualIncome) => {
-	let taxAmount = 0;
-
-	switch (true) {
-		case taxableAnnualIncome <= 250000:
-			taxAmount = 0;
-			break;
-		case taxableAnnualIncome <= 400000:
-			taxAmount = (taxableAnnualIncome - 250000) * 0.15;
-			break;
-		case taxableAnnualIncome <= 800000:
-			taxAmount = 22500 + (taxableAnnualIncome - 400000) * 0.2;
-			break;
-		case taxableAnnualIncome <= 2000000:
-			taxAmount = 102500 + (taxableAnnualIncome - 800000) * 0.25;
-			break;
-		case taxableAnnualIncome <= 8000000:
-			taxAmount = 402500 + (taxableAnnualIncome - 2000000) * 0.3;
-			break;
-		default:
-			taxAmount = 2202500 + (taxableAnnualIncome - 8000000) * 0.35;
-	}
-	return taxAmount / 12;
-};
-
-const bracketSSS = (lower, upper) => (income) =>
-	(isNaN(lower) || income >= lower) && (isNaN(upper) || income < upper);
-
-export const computeSSS = (salary) => {
-	const matrix = [
-		[1000, 3250, 135, 0],
-		[3250, 3750, 157.5, 0],
-		[3750, 4250, 180, 0],
-		[4250, 4750, 202.5, 0],
-		[4750, 5250, 225, 0],
-		[5250, 5750, 247.5, 0],
-		[5750, 6250, 270, 0],
-		[6250, 6750, 292.5, 0],
-		[6750, 7250, 315, 0],
-		[7250, 7750, 337.5, 0],
-		[7750, 8250, 360, 0],
-		[8250, 8750, 382.5, 0],
-		[8750, 9250, 405, 0],
-		[9250, 9750, 427.5, 0],
-		[9750, 10250, 450, 0],
-		[10250, 10750, 472.5, 0],
-		[10750, 11250, 495, 0],
-		[11250, 11750, 517.5, 0],
-		[11750, 12250, 540, 0],
-		[12250, 12750, 562.5, 0],
-		[12750, 13250, 585, 0],
-		[13250, 13750, 607.5, 0],
-		[13750, 14250, 630, 0],
-		[14250, 14750, 652.5, 0],
-		[14750, 15250, 675, 0],
-		[15250, 15750, 697.5, 0],
-		[15750, 16250, 720, 0],
-		[16250, 16750, 742.5, 0],
-		[16750, 17250, 765, 0],
-		[17250, 17750, 787.5, 0],
-		[17750, 18250, 810, 0],
-		[18250, 18750, 832.5, 0],
-		[18750, 19250, 855, 0],
-		[19250, 19750, 877.5, 0],
-		[19750, 20250, 900, 0],
-		[20250, 20750, 900, 22.5],
-		[20750, 21250, 900, 45],
-		[21250, 21750, 900, 67.5],
-		[21750, 22250, 990, 90],
-		[22250, 22750, 900, 112.5],
-		[22750, 23250, 900, 135],
-		[23250, 23750, 900, 157.5],
-		[23750, 24250, 900, 180],
-		[24250, 24750, 900, 202.5],
-		[24750, NaN, 900, 225],
+	const taxBrackets = [
+		{ min: 0, max: 250000, rate: 0, base: 0 },
+		{ min: 250001, max: 400000, rate: 0.15, base: 0 },
+		{ min: 400001, max: 800000, rate: 0.2, base: 22500 },
+		{ min: 800001, max: 2000000, rate: 0.25, base: 102500 },
+		{ min: 2000001, max: 8000000, rate: 0.3, base: 402500 },
+		{ min: 8000001, max: Infinity, rate: 0.35, base: 2202500 },
 	];
 
-	let sss = 0;
-	let mpf = 0;
+	for (const bracket of taxBrackets) {
+		if (
+			taxableAnnualIncome >= bracket.min &&
+			taxableAnnualIncome <= bracket.max
+		) {
+			if (bracket.rate === 0) {
+				return 0;
+			}
 
-	for (const bracket of matrix) {
-		if (bracketSSS(bracket[0], bracket[1])(salary)) {
-			sss += bracket[2];
-			mpf += bracket[3];
+			const excess = taxableAnnualIncome - bracket.min;
+			const annualTax = bracket.base + excess * bracket.rate;
+			return annualTax / 12;
 		}
 	}
 
-	return { sss, mpf };
+	return 0;
 };
 
-const bracketPhilHealth = [
-	[NaN, 10000, () => 500],
-	[10000.01, 99999.99, (mon) => mon * 0.05],
-	[100000, NaN, () => 5000],
+// jan 2025 rates
+const SSS_MATRIX = [
+	[0, 5249.99, 250.0, 0.0],
+	[5250, 5749.99, 275.0, 0.0],
+	[5750, 6249.99, 300.0, 0.0],
+	[6250, 6749.99, 325.0, 0.0],
+	[6750, 7249.99, 350.0, 0.0],
+	[7250, 7749.99, 375.0, 0.0],
+	[7750, 8249.99, 400.0, 0.0],
+	[8250, 8749.99, 425.0, 0.0],
+	[8750, 9249.99, 450.0, 0.0],
+	[9250, 9749.99, 475.0, 0.0],
+	[9750, 10249.99, 500.0, 0.0],
+	[10250, 10749.99, 525.0, 0.0],
+	[10750, 11249.99, 550.0, 0.0],
+	[11250, 11749.99, 575.0, 0.0],
+	[11750, 12249.99, 600.0, 0.0],
+	[12250, 12749.99, 625.0, 0.0],
+	[12750, 13249.99, 650.0, 0.0],
+	[13250, 13749.99, 675.0, 0.0],
+	[13750, 14249.99, 700.0, 0.0],
+	[14250, 14749.99, 725.0, 0.0],
+	[14750, 15249.99, 750.0, 0.0],
+	[15250, 15749.99, 775.0, 0.0],
+	[15750, 16249.99, 800.0, 0.0],
+	[16250, 16749.99, 825.0, 0.0],
+	[16750, 17249.99, 850.0, 0.0],
+	[17250, 17749.99, 875.0, 0.0],
+	[17750, 18249.99, 900.0, 0.0],
+	[18250, 18749.99, 925.0, 0.0],
+	[18750, 19249.99, 950.0, 0.0],
+	[19250, 19749.99, 975.0, 0.0],
+	[19750, 20249.99, 1000.0, 0.0],
+	[20250, 20749.99, 1000.0, 25.0],
+	[20750, 21249.99, 1000.0, 50.0],
+	[21250, 21749.99, 1000.0, 75.0],
+	[21750, 22249.99, 1000.0, 100.0],
+	[22250, 22749.99, 1000.0, 125.0],
+	[22750, 23249.99, 1000.0, 150.0],
+	[23250, 23749.99, 1000.0, 175.0],
+	[23750, 24249.99, 1000.0, 200.0],
+	[24250, 24749.99, 1000.0, 225.0],
+	[24750, 25249.99, 1000.0, 250.0],
+	[25250, 25749.99, 1000.0, 275.0],
+	[25750, 26249.99, 1000.0, 300.0],
+	[26250, 26749.99, 1000.0, 325.0],
+	[26750, 27249.99, 1000.0, 350.0],
+	[27250, 27749.99, 1000.0, 375.0],
+	[27750, 28249.99, 1000.0, 400.0],
+	[28250, 28749.99, 1000.0, 425.0],
+	[28750, 29249.99, 1000.0, 450.0],
+	[29250, 29749.99, 1000.0, 475.0],
+	[29750, 30249.99, 1000.0, 500.0],
+	[30250, 30749.99, 1000.0, 525.0],
+	[30750, 31249.99, 1000.0, 550.0],
+	[31250, 31749.99, 1000.0, 575.0],
+	[31750, 32249.99, 1000.0, 600.0],
+	[32250, 32749.99, 1000.0, 625.0],
+	[32750, 33249.99, 1000.0, 650.0],
+	[33250, 33749.99, 1000.0, 675.0],
+	[33750, 34249.99, 1000.0, 700.0],
+	[34250, 34749.99, 1000.0, 725.0],
+	[34750, Infinity, 1000.0, 750.0],
 ];
 
-export const computePhilHealth = (monthly) => {
-	return (
-		bracketPhilHealth
-			.filter((phBracket) => bracket(phBracket[0], phBracket[1])(monthly))
-			.reduce(
-				(contribution, phBracket) => (contribution += phBracket[2](monthly)),
-				0
-			) * 0.5
-	);
+export const computeSSS = (salary) => {
+	if (isNaN(salary)) {
+		return { sss: 0, mpf: 0 };
+	}
+
+	if (salary < 5250.0) {
+		const applicableMsc = 5000;
+		return {
+			sss: applicableMsc * 0.05,
+			mpf: 0,
+		};
+	}
+
+	if (salary >= 34750.0) {
+		const applicableMsc = 35000;
+		const sss = 20000 * 0.05;
+		const mpf = (applicableMsc - 20000) * 0.05;
+		return {
+			sss,
+			mpf: parseFloat(mpf.toFixed(2)),
+		};
+	}
+
+	for (const [lower, upper, sss, mpf] of SSS_MATRIX) {
+		if (salary >= lower && salary <= upper) {
+			return { sss, mpf };
+		}
+	}
+
+	return { sss: 0, mpf: 0 };
 };
 
-export const computePagIbig = () => {
+// jan 2024 rates
+const PHILHEALTH_BRACKETS = [
+	[null, 10000, () => 500],
+	[10000.01, 99999.99, (monthly) => monthly * 0.05],
+	[100000, null, () => 5000],
+];
+
+const isInBracket = (lower, upper) => (income) =>
+	(isNaN(lower) || income >= lower) && (isNaN(upper) || income <= upper);
+
+export const computePhilHealth = (monthly) => {
+	for (const [lower, upper, calculator] of PHILHEALTH_BRACKETS) {
+		if (isInBracket(lower, upper)(monthly)) {
+			return calculator(monthly) * 0.5;
+		}
+	}
+	return 0;
+};
+
+// feb 2024 rates
+export const computePagIbig = (salary) => {
+	if (salary <= 1500) return salary * 0.01;
+	if (salary <= 10000) return salary * 0.02;
 	return 200;
 };
 

@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import Inputs from "./components/Inputs";
 import Summary from "./components/Summary";
-import { useTheme } from "./components/ThemeProvider";
+import { useTheme } from "./utils/themeContext";
 import { HiSun, HiMoon } from "react-icons/hi";
 
 const App = () => {
@@ -70,12 +70,12 @@ const App = () => {
 						<div className="p-2">
 							<Summary
 								theme={theme}
-								monthlySalary={monthlySalary}
+								takeHomePay={Number(takeHomePay)}
+								withholdingTax={Number(withholdingTax)}
+								monthlySalary={Number(monthlySalary)}
 								allowance={allowance}
 								sector={sector}
 								allowanceTaxable={allowanceTaxable}
-								takeHomePay={takeHomePay}
-								withholdingTax={withholdingTax}
 								activeSector={sector}
 							/>
 							<div className="mt-4 flex justify-center" data-html2canvas-ignore>
