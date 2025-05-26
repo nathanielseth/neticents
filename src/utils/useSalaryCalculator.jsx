@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
 	handleInput,
 	computeWithholdingTax,
@@ -13,19 +13,107 @@ export const useSalaryCalculator = (
 	setMonthlySalary,
 	setAllowance,
 	setTakeHomePay,
-	setWithholdingTax
+	setWithholdingTax,
+	setSector,
+	setAllowanceTaxable,
+	setOvertimeHours,
+	setNightDifferentialHours
 ) => {
 	const [activeSector, setActiveSector] = useState("private");
-	const [allowanceTaxable, setAllowanceTaxable] = useState(false);
+	const [allowanceTaxable, setAllowanceTaxableState] = useState(false);
 	const [monthlySalary, setMonthlySalaryValue] = useState("");
 	const [allowance, setAllowanceValue] = useState("");
+	const [overtimeHours, setOvertimeHoursValue] = useState("");
+	const [nightDifferentialHours, setNightDifferentialHoursValue] = useState("");
+
+	useEffect(() => {
+		if (activeSector === "selfemployed") {
+			setOvertimeHoursValue("");
+			setNightDifferentialHoursValue("");
+			setOvertimeHours(0);
+			setNightDifferentialHours(0);
+		} else if (activeSector === "public") {
+			setOvertimeHoursValue("");
+			setOvertimeHours(0);
+		}
+	}, [activeSector, setOvertimeHours, setNightDifferentialHours]);
+
+	const calculatePremiumPay = useCallback(
+		(hourlyRate, otHours, ndHours, sector) => {
+			if (sector === "selfemployed") {
+				return {
+					regularOvertimePay: 0,
+					regularNightPay: 0,
+					nightOvertimePay: 0,
+					totalPremiumPay: 0,
+					breakdown: {
+						regularOvertimeHours: 0,
+						regularNightHours: 0,
+						overlapHours: 0,
+						rates: {
+							overtime: 0,
+							nightDiff: 0,
+							nightOvertime: 0,
+						},
+					},
+				};
+			}
+
+			const nightDiffRate = sector === "public" ? 1.2 : 1.1;
+			const overtimeRate = 1.25;
+			const nightOvertimeRate = 1.375;
+
+			const effectiveOtHours = sector === "public" ? 0 : otHours;
+			const overlapHours = Math.min(effectiveOtHours, ndHours);
+
+			const regularOvertimeHours = effectiveOtHours - overlapHours;
+			const regularNightHours = ndHours - overlapHours;
+
+			const regularOvertimePay =
+				regularOvertimeHours * hourlyRate * overtimeRate;
+			const regularNightPay = regularNightHours * hourlyRate * nightDiffRate;
+			const nightOvertimePay = overlapHours * hourlyRate * nightOvertimeRate;
+
+			return {
+				regularOvertimePay,
+				regularNightPay,
+				nightOvertimePay,
+				totalPremiumPay:
+					regularOvertimePay + regularNightPay + nightOvertimePay,
+				breakdown: {
+					regularOvertimeHours,
+					regularNightHours,
+					overlapHours,
+					rates: {
+						overtime: overtimeRate,
+						nightDiff: nightDiffRate,
+						nightOvertime: nightOvertimeRate,
+					},
+				},
+			};
+		},
+		[]
+	);
 
 	const calculate = useCallback(
-		(salary, allowanceAmount, isAllowanceTaxable, sector) => {
+		(salary, allowanceAmount, isAllowanceTaxable, sector, otHours, ndHours) => {
 			const baseSalary = salary;
+			const hourlyRate = salary / (22 * 8);
+
+			const premiumPayResult = calculatePremiumPay(
+				hourlyRate,
+				otHours,
+				ndHours,
+				sector
+			);
+			const totalPremiumPay = premiumPayResult.totalPremiumPay;
+
+			const totalGrossPay = baseSalary + totalPremiumPay;
+
+			// For tax calculation: include allowance if taxable
 			const taxableSalary = isAllowanceTaxable
-				? salary + allowanceAmount
-				: salary;
+				? totalGrossPay + allowanceAmount
+				: totalGrossPay;
 			const annualIncome = taxableSalary * 12;
 
 			const contributions = {
@@ -36,7 +124,6 @@ export const useSalaryCalculator = (
 				pagIbig: computePagIbig(taxableSalary),
 			};
 
-			// Determine contribution rates based on sector
 			const isSelfEmployed = sector === "selfemployed";
 
 			if (sector === "private" || sector === "selfemployed") {
@@ -49,7 +136,7 @@ export const useSalaryCalculator = (
 				);
 			} else if (sector === "public") {
 				contributions.gsis = computeGSIS(taxableSalary);
-				contributions.philHealth = computePhilHealth(taxableSalary, false); // Public employees share 50/50
+				contributions.philHealth = computePhilHealth(taxableSalary, false);
 			}
 
 			const totalContributions =
@@ -67,14 +154,23 @@ export const useSalaryCalculator = (
 			setWithholdingTax(monthlyWithholdingTax);
 
 			const totalDeductions = totalContributions + monthlyWithholdingTax;
-			const netPay = baseSalary - totalDeductions;
-			const finalTakeHome = isAllowanceTaxable
-				? Math.max(netPay, 0)
-				: Math.max(netPay + allowanceAmount, 0);
+			const netPay = totalGrossPay - totalDeductions;
+
+			// BUG FIX: Always add allowance to final take-home pay
+			// The tax status only affects whether allowance was included in tax calculations above
+			const finalTakeHome = Math.max(netPay + allowanceAmount, 0);
 
 			setTakeHomePay(parseFloat(finalTakeHome.toFixed(2)));
+
+			return {
+				baseSalary,
+				hourlyRate,
+				premiumPayBreakdown: premiumPayResult.breakdown,
+				totalGrossPay,
+				finalTakeHome,
+			};
 		},
-		[setWithholdingTax, setTakeHomePay]
+		[setWithholdingTax, setTakeHomePay, calculatePremiumPay]
 	);
 
 	const parseValue = useCallback((formattedValue) => {
@@ -87,13 +183,24 @@ export const useSalaryCalculator = (
 			setMonthlySalaryValue(formattedValue);
 
 			const salary = parseValue(formattedValue);
-			const allowanceAmount = parseValue(allowance);
-
 			setMonthlySalary(salary);
-			calculate(salary, allowanceAmount, allowanceTaxable, activeSector);
+
+			const allowanceAmount = parseValue(allowance);
+			const otHours = parseValue(overtimeHours);
+			const ndHours = parseValue(nightDifferentialHours);
+			calculate(
+				salary,
+				allowanceAmount,
+				allowanceTaxable,
+				activeSector,
+				otHours,
+				ndHours
+			);
 		},
 		[
 			allowance,
+			overtimeHours,
+			nightDifferentialHours,
 			allowanceTaxable,
 			activeSector,
 			calculate,
@@ -108,13 +215,24 @@ export const useSalaryCalculator = (
 			setAllowanceValue(formattedValue);
 
 			const allowanceAmount = parseValue(formattedValue);
-			const salary = parseValue(monthlySalary);
-
 			setAllowance(allowanceAmount);
-			calculate(salary, allowanceAmount, allowanceTaxable, activeSector);
+
+			const salary = parseValue(monthlySalary);
+			const otHours = parseValue(overtimeHours);
+			const ndHours = parseValue(nightDifferentialHours);
+			calculate(
+				salary,
+				allowanceAmount,
+				allowanceTaxable,
+				activeSector,
+				otHours,
+				ndHours
+			);
 		},
 		[
 			monthlySalary,
+			overtimeHours,
+			nightDifferentialHours,
 			allowanceTaxable,
 			activeSector,
 			calculate,
@@ -125,26 +243,134 @@ export const useSalaryCalculator = (
 
 	const handleTaxableChange = useCallback(
 		(taxable) => {
+			setAllowanceTaxableState(taxable);
 			setAllowanceTaxable(taxable);
 
 			const salary = parseValue(monthlySalary);
 			const allowanceAmount = parseValue(allowance);
-
-			calculate(salary, allowanceAmount, taxable, activeSector);
+			const otHours = parseValue(overtimeHours);
+			const ndHours = parseValue(nightDifferentialHours);
+			calculate(
+				salary,
+				allowanceAmount,
+				taxable,
+				activeSector,
+				otHours,
+				ndHours
+			);
 		},
-		[monthlySalary, allowance, activeSector, calculate, parseValue]
+		[
+			monthlySalary,
+			allowance,
+			overtimeHours,
+			nightDifferentialHours,
+			activeSector,
+			calculate,
+			parseValue,
+			setAllowanceTaxable,
+		]
 	);
 
 	const handleSectorChange = useCallback(
 		(sector) => {
 			setActiveSector(sector);
+			setSector(sector);
 
 			const salary = parseValue(monthlySalary);
 			const allowanceAmount = parseValue(allowance);
-
-			calculate(salary, allowanceAmount, allowanceTaxable, sector);
+			const otHours = parseValue(overtimeHours);
+			const ndHours = parseValue(nightDifferentialHours);
+			calculate(
+				salary,
+				allowanceAmount,
+				allowanceTaxable,
+				sector,
+				otHours,
+				ndHours
+			);
 		},
-		[monthlySalary, allowance, allowanceTaxable, calculate, parseValue]
+		[
+			monthlySalary,
+			allowance,
+			overtimeHours,
+			nightDifferentialHours,
+			allowanceTaxable,
+			calculate,
+			parseValue,
+			setSector,
+		]
+	);
+
+	const handleOvertimeHoursChange = useCallback(
+		(e) => {
+			if (activeSector === "selfemployed" || activeSector === "public") {
+				return;
+			}
+
+			const formattedValue = handleInput(e.target.value);
+			setOvertimeHoursValue(formattedValue);
+
+			const otHours = parseValue(formattedValue);
+			setOvertimeHours(otHours);
+
+			const salary = parseValue(monthlySalary);
+			const allowanceAmount = parseValue(allowance);
+			const ndHours = parseValue(nightDifferentialHours);
+			calculate(
+				salary,
+				allowanceAmount,
+				allowanceTaxable,
+				activeSector,
+				otHours,
+				ndHours
+			);
+		},
+		[
+			activeSector,
+			monthlySalary,
+			allowance,
+			nightDifferentialHours,
+			allowanceTaxable,
+			calculate,
+			parseValue,
+			setOvertimeHours,
+		]
+	);
+
+	const handleNightDifferentialHoursChange = useCallback(
+		(e) => {
+			if (activeSector === "selfemployed") {
+				return;
+			}
+
+			const formattedValue = handleInput(e.target.value);
+			setNightDifferentialHoursValue(formattedValue);
+
+			const ndHours = parseValue(formattedValue);
+			setNightDifferentialHours(ndHours);
+
+			const salary = parseValue(monthlySalary);
+			const allowanceAmount = parseValue(allowance);
+			const otHours = parseValue(overtimeHours);
+			calculate(
+				salary,
+				allowanceAmount,
+				allowanceTaxable,
+				activeSector,
+				otHours,
+				ndHours
+			);
+		},
+		[
+			activeSector,
+			monthlySalary,
+			allowance,
+			overtimeHours,
+			allowanceTaxable,
+			calculate,
+			parseValue,
+			setNightDifferentialHours,
+		]
 	);
 
 	return {
@@ -152,9 +378,13 @@ export const useSalaryCalculator = (
 		allowanceTaxable,
 		monthlySalary,
 		allowance,
+		overtimeHours,
+		nightDifferentialHours,
 		handleSalaryChange,
 		handleAllowanceChange,
 		handleSectorChange,
 		handleTaxableChange,
+		handleOvertimeHoursChange,
+		handleNightDifferentialHoursChange,
 	};
 };

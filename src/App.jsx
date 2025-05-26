@@ -13,6 +13,9 @@ const App = () => {
 	const [sector, setSector] = useState("private");
 	const [takeHomePay, setTakeHomePay] = useState(0);
 	const [withholdingTax, setWithholdingTax] = useState(0);
+	const [overtimeHours, setOvertimeHours] = useState("");
+	const [nightDifferentialHours, setNightDifferentialHours] = useState("");
+
 	const formRef = useRef(null);
 
 	const handleDownload = async () => {
@@ -62,21 +65,26 @@ const App = () => {
 								setAllowanceTaxable={setAllowanceTaxable}
 								setSector={setSector}
 								setTakeHomePay={setTakeHomePay}
-								allowanceTaxable={allowanceTaxable}
 								setWithholdingTax={setWithholdingTax}
+								overtimeHours={overtimeHours}
+								setOvertimeHours={setOvertimeHours}
+								nightDifferentialHours={nightDifferentialHours}
+								setNightDifferentialHours={setNightDifferentialHours}
 							/>
 						</div>
 
-						<div className="p-2">
+						<div className="p-2 flex flex-col justify-center">
 							<Summary
 								theme={theme}
 								takeHomePay={Number(takeHomePay)}
 								withholdingTax={Number(withholdingTax)}
-								monthlySalary={Number(monthlySalary)}
+								monthlySalary={Number(monthlySalary) || 0}
 								allowance={allowance}
 								sector={sector}
 								allowanceTaxable={allowanceTaxable}
 								activeSector={sector}
+								overtimeHours={Number(overtimeHours) || 0}
+								nightDifferentialHours={Number(nightDifferentialHours) || 0}
 							/>
 							<div className="mt-4 flex justify-center" data-html2canvas-ignore>
 								<button
@@ -103,6 +111,8 @@ const App = () => {
 			</footer>
 
 			<button
+				type="button"
+				aria-label="Toggle theme"
 				className="fixed bottom-6 right-6 bg-gray-800 dark:bg-gray-100 text-white dark:text-gray-800 p-2 rounded-full shadow-lg hover:bg-gray-700 dark:hover:bg-gray-300 transition duration-100"
 				onClick={toggleTheme}
 			>
