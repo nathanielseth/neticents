@@ -1,8 +1,6 @@
 # NETICENTS
 
-A simple Philippine income tax calculator.
-
-> Updated for 2025
+A real-time Philippine income tax calculator that helps estimate salary deductions.
 
 <p>
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
@@ -10,7 +8,18 @@ A simple Philippine income tax calculator.
   <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
 </p>
 
-👉 [Calculate now](https://nathanielseth.github.io/neticents)
+> Updated for 2025 SSS contribution brackets
+
+
+## How It Works
+
+Computes net take-home pay using current Philippine tax laws:
+
+- **Withholding Tax** - BIR's progressive tax brackets
+- **Mandatory Contributions** - SSS/GSIS, PhilHealth, Pag-IBIG
+- **Premium Pay** - Overtime & night differential rates
+
+[Try it now](https://nathanielseth.github.io/neticents/)
 
 ## License
 
