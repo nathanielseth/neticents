@@ -110,7 +110,6 @@ export const useSalaryCalculator = (
 
 			const totalGrossPay = baseSalary + totalPremiumPay;
 
-			// For tax calculation: include allowance if taxable
 			const taxableSalary = isAllowanceTaxable
 				? totalGrossPay + allowanceAmount
 				: totalGrossPay;
@@ -156,8 +155,6 @@ export const useSalaryCalculator = (
 			const totalDeductions = totalContributions + monthlyWithholdingTax;
 			const netPay = totalGrossPay - totalDeductions;
 
-			// BUG FIX: Always add allowance to final take-home pay
-			// The tax status only affects whether allowance was included in tax calculations above
 			const finalTakeHome = Math.max(netPay + allowanceAmount, 0);
 
 			setTakeHomePay(parseFloat(finalTakeHome.toFixed(2)));
@@ -179,6 +176,10 @@ export const useSalaryCalculator = (
 
 	const handleSalaryChange = useCallback(
 		(e) => {
+			let raw = e.target.value;
+			const stringValue = String(raw);
+			if (stringValue.length > 14) return;
+
 			const formattedValue = handleInput(e.target.value);
 			setMonthlySalaryValue(formattedValue);
 
@@ -211,6 +212,10 @@ export const useSalaryCalculator = (
 
 	const handleAllowanceChange = useCallback(
 		(e) => {
+			let raw = e.target.value;
+			const stringValue = String(raw);
+			if (stringValue.length > 14) return;
+
 			const formattedValue = handleInput(e.target.value);
 			setAllowanceValue(formattedValue);
 
@@ -306,6 +311,9 @@ export const useSalaryCalculator = (
 			if (activeSector === "selfemployed" || activeSector === "public") {
 				return;
 			}
+			let raw = e.target.value;
+			const stringValue = String(raw);
+			if (stringValue.length > 3) return;
 
 			const formattedValue = handleInput(e.target.value);
 			setOvertimeHoursValue(formattedValue);
@@ -342,6 +350,9 @@ export const useSalaryCalculator = (
 			if (activeSector === "selfemployed") {
 				return;
 			}
+			let raw = e.target.value;
+			const stringValue = String(raw);
+			if (stringValue.length > 3) return;
 
 			const formattedValue = handleInput(e.target.value);
 			setNightDifferentialHoursValue(formattedValue);

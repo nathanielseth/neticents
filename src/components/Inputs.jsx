@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
 import { useSalaryCalculator } from "../utils/useSalaryCalculator";
 import { useEffect, useState } from "react";
+import { ChevronUp, ChevronDown } from "lucide-react";
+import { handleInput, parseFormattedNumber } from "../utils/calculation";
 
 const SECTOR_OPTIONS = [
 	{ id: "private", label: "Private" },
@@ -18,43 +20,98 @@ const InputField = ({
 	value,
 	onChange,
 	placeholder,
-	maxLength,
 	theme,
-	type = "text",
-	inputMode = "text",
 	disabled = false,
-}) => (
-	<div className="mb-4">
-		<label className="label">{label}</label>
-		<div className="input-wrapper">
-			<input
-				type={type}
-				inputMode={inputMode}
-				className={`input-field ${
-					theme === "dark" ? "dark-mode" : "light-mode"
-				} rounded-l focus:ring-2 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-gray-900 focus:ring-blue-500 dark:focus:ring-blue-400 ${
-					disabled ? "opacity-50 cursor-not-allowed" : ""
-				}`}
-				placeholder={placeholder}
-				value={value}
-				onChange={onChange}
-				maxLength={maxLength}
-				disabled={disabled}
-			/>
+	useFormatter = false,
+	step = 1,
+	min = 0,
+}) => {
+	const formatValue = (val) =>
+		useFormatter ? handleInput(val.toString()) : val.toString();
+	const parseValue = (val) =>
+		useFormatter ? parseFormattedNumber(val || "0") : parseFloat(val || "0");
+
+	const updateValue = (newValue) => {
+		const clampedValue = Math.max(min, newValue);
+		const syntheticEvent = {
+			target: { value: formatValue(clampedValue) },
+		};
+		onChange(syntheticEvent);
+	};
+
+	const handleIncrement = () => {
+		if (disabled) return;
+		const currentValue = parseValue(value);
+		updateValue(currentValue + step);
+	};
+
+	const handleDecrement = () => {
+		if (disabled) return;
+		const currentValue = parseValue(value);
+		updateValue(currentValue - step);
+	};
+
+	return (
+		<div className="mb-4">
+			<label className="label">{label}</label>
+			<div className="relative input-wrapper">
+				<input
+					type="text"
+					inputMode="decimal"
+					className={`input-field ${
+						theme === "dark" ? "dark-mode" : "light-mode"
+					} rounded-l pr-8 ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+					placeholder={placeholder}
+					value={value}
+					onChange={onChange}
+					disabled={disabled}
+				/>
+
+				<div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex flex-col">
+					<button
+						type="button"
+						onClick={handleIncrement}
+						disabled={disabled}
+						className={`p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors ${
+							disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+						}`}
+						tabIndex={-1}
+					>
+						<ChevronUp
+							size={12}
+							className={theme === "dark" ? "text-gray-400" : "text-gray-600"}
+						/>
+					</button>
+					<button
+						type="button"
+						onClick={handleDecrement}
+						disabled={disabled}
+						className={`p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors ${
+							disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+						}`}
+						tabIndex={-1}
+					>
+						<ChevronDown
+							size={12}
+							className={theme === "dark" ? "text-gray-400" : "text-gray-600"}
+						/>
+					</button>
+				</div>
+			</div>
 		</div>
-	</div>
-);
+	);
+};
 
 InputField.propTypes = {
 	label: PropTypes.string.isRequired,
 	value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 	onChange: PropTypes.func.isRequired,
 	placeholder: PropTypes.string,
-	maxLength: PropTypes.number,
 	theme: PropTypes.string.isRequired,
-	type: PropTypes.string,
-	inputMode: PropTypes.string,
 	disabled: PropTypes.bool,
+	useFormatter: PropTypes.bool,
+	step: PropTypes.number,
+	min: PropTypes.number,
 };
 
 const ToggleButton = ({ label, isActive, onClick, theme }) => (
@@ -119,7 +176,6 @@ const Inputs = ({
 		return () => window.removeEventListener("resize", checkMobile);
 	}, []);
 
-	// Determine if fields should be disabled based on sector
 	const isOvertimeDisabled =
 		activeSector === "selfemployed" || activeSector === "public";
 	const isNightDiffDisabled = activeSector === "selfemployed";
@@ -127,7 +183,9 @@ const Inputs = ({
 	return (
 		<div
 			className={`p-6 rounded-lg ${
-				theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+				theme === "dark"
+					? "dark-mode bg-gray-900 text-white"
+					: "bg-white text-gray-900"
 			}`}
 		>
 			<div className="mb-4">
@@ -145,15 +203,16 @@ const Inputs = ({
 				</div>
 			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-1">
 				<InputField
 					label="Monthly Basic Pay"
 					value={displayMonthlySalary}
 					onChange={handleSalaryChange}
 					placeholder="0.00"
-					maxLength={14}
 					theme={theme}
-					inputMode="decimal"
+					useFormatter={true}
+					step={1000}
+					min={0}
 				/>
 
 				<InputField
@@ -161,9 +220,10 @@ const Inputs = ({
 					value={displayAllowance}
 					onChange={handleAllowanceChange}
 					placeholder="0.00"
-					maxLength={14}
 					theme={theme}
-					inputMode="decimal"
+					useFormatter={true}
+					step={500}
+					min={0}
 				/>
 			</div>
 
@@ -182,41 +242,42 @@ const Inputs = ({
 				</div>
 			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
 				<InputField
-					label={"Overtime Hours"}
+					label="Overtime Hours"
 					value={isOvertimeDisabled ? "" : overtimeHours}
 					onChange={handleOvertimeHoursChange}
 					placeholder={isOvertimeDisabled ? "N/A" : "0"}
-					maxLength={3}
 					theme={theme}
-					inputMode="decimal"
 					disabled={isOvertimeDisabled}
+					useFormatter={false}
+					step={1}
+					min={0}
 				/>
 
 				<InputField
-					label={"Night Differential Hours"}
+					label="Night Differential Hours"
 					value={isNightDiffDisabled ? "" : nightDifferentialHours}
 					onChange={handleNightDifferentialHoursChange}
 					placeholder={isNightDiffDisabled ? "N/A" : "0"}
-					maxLength={3}
 					theme={theme}
-					inputMode="decimal"
 					disabled={isNightDiffDisabled}
+					useFormatter={false}
+					step={1}
+					min={0}
 				/>
 			</div>
 
-			{!isMobile && (
-				<div
-					className={`mt-6 text-sm ${
-						theme === "dark" ? "text-gray-400" : "text-gray-600"
-					}`}
-					data-html2canvas-ignore
-				>
-					Note: This web application serves as a tool for estimation purposes
-					and should not be considered a replacement for payroll professionals.
-				</div>
-			)}
+			<div
+				className={`mt-1 text-sm ${
+					theme === "dark" ? "text-gray-400" : "text-gray-600"
+				}`}
+				data-html2canvas-ignore
+			>
+				Note: This web application provides estimates based on standard working
+				conditions and does not factor in holidays or other specific
+				circumstances.
+			</div>
 		</div>
 	);
 };

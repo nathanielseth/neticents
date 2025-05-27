@@ -11,15 +11,26 @@ body {
 }
 
 .btn {
-	@apply py-2 px-4 border border-gray-400 rounded-md text-gray-900 cursor-pointer transition-all;
+	@apply py-2.5 px-4 border rounded-md cursor-pointer transition-all duration-200 font-medium text-sm;
+	border-color: rgb(209 213 219);
+	background-color: white;
+	color: rgb(55 65 81);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+	background-color: rgb(243 244 246);
+	border-color: rgb(156 163 175);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-active {
-	@apply bg-[#4169e1] text-white;
+	@apply bg-[#4169e1] text-white border-[#4169e1];
 }
 
-.btn-inactive {
-	@apply bg-transparent;
+.btn-active:hover {
+	background-color: rgb(65 105 225);
+	border-color: rgb(65 105 225);
 }
 
 .input-wrapper {
@@ -27,23 +38,75 @@ body {
 }
 
 .input-field {
-	@apply w-full p-2 border border-gray-400 rounded-r text-black bg-transparent focus:outline-none;
+	@apply w-full p-2 rounded-md focus:outline-none font-medium;
+	background-color: white;
+	border: 1px solid rgb(209 213 219);
+	color: rgb(17 24 39);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.input-field:focus {
+	box-shadow: 0 0 0 2px rgb(59 130 246);
+}
+
+.input-field:disabled {
+	background-color: rgb(243 244 246);
+	color: rgb(107 114 128);
+	cursor: not-allowed;
+	box-shadow: 0 0 0 1px rgb(209 213 219);
 }
 
 .label {
-	@apply block text-sm text-gray-500 mt-4;
+	@apply block text-sm font-medium mb-2;
+	color: rgb(17 24 39);
+}
+
+/* dark mode styles */
+.dark-mode.btn {
+	background-color: rgb(31 41 55);
+	border-color: rgb(75 85 99);
+	color: rgb(209 213 219);
+}
+
+.dark-mode.btn:hover {
+	background-color: rgb(55 65 81);
+	border-color: rgb(107 114 128);
+}
+
+.dark-mode.btn-active {
+	@apply bg-[#4169e1] text-white border-[#4169e1];
+}
+
+.dark-mode.btn-active:hover {
+	background-color: rgb(65 105 225);
+	border-color: rgb(65 105 225);
+}
+
+.dark-mode.input-field {
+	background-color: rgb(31 41 55);
+	color: rgb(243 244 246);
+	box-shadow: 0 0 0 1px rgb(75 85 99);
+	border: 1px solid transparent;
+}
+
+.dark-mode.input-field:focus {
+	box-shadow: 0 0 0 2px rgb(59 130 246);
+}
+
+.dark-mode.input-field:disabled {
+	background-color: rgb(55 65 81);
+	color: rgb(107 114 128);
+	cursor: not-allowed;
+	box-shadow: 0 0 0 1px rgb(75 85 99);
+}
+
+.dark-mode .label,
+.dark-mode.label {
+	color: white;
 }
 
 @layer base {
 	img {
 		display: initial;
 	}
-}
-
-.dark-mode {
-	color: white;
-}
-
-.light-mode {
-	color: black;
 }
