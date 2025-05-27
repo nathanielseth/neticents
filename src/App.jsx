@@ -19,24 +19,8 @@ const App = () => {
 	const formRef = useRef(null);
 
 	const handleDownload = async () => {
-		const element = formRef.current;
-		const isMobile = window.innerWidth < 768;
-
-		const html2pdf = (await import("html2pdf.js")).default;
-
-		const opt = {
-			margin: isMobile ? 0 : 1,
-			filename: "neticents.pdf",
-			image: { type: "png", quality: 1 },
-			html2canvas: { scale: isMobile ? 0.85 : 0.961, letterRendering: true },
-			jsPDF: {
-				unit: "in",
-				format: "letter",
-				orientation: isMobile ? "portrait" : "landscape",
-			},
-		};
-
-		html2pdf().from(element).set(opt).save();
+		// TODO: Implement alternative PDF generation
+		console.log("PDF generation functionality to be implemented");
 	};
 
 	return (
@@ -50,7 +34,7 @@ const App = () => {
 						Income Tax Calculator PH
 					</h2>
 					<p className="text-center text-gray-500 dark:text-gray-400 mt-2">
-						Updated with 2025 Tax Rates
+						Updated for 2025
 					</p>
 
 					<div

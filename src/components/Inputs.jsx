@@ -9,6 +9,12 @@ const SECTOR_OPTIONS = [
 	{ id: "selfemployed", label: "Self-Employed" },
 ];
 
+const WORK_SCHEDULE_OPTIONS = [
+	{ id: "mon-fri", label: "Mon-Fri" },
+	{ id: "mon-sat", label: "Mon-Sat" },
+	{ id: "mon-sun", label: "Mon-Sun" },
+];
+
 const InputField = ({
 	label,
 	value,
@@ -146,11 +152,13 @@ const Inputs = ({
 }) => {
 	const {
 		activeSector,
+		workSchedule,
 		monthlySalary: displayMonthlySalary,
 		allowance: displayAllowance,
 		handleSalaryChange,
 		handleAllowanceChange,
 		handleSectorChange,
+		handleWorkScheduleChange,
 		handleOvertimeHoursChange,
 		handleNightDifferentialHoursChange,
 		getDeMinimisHelperText,
@@ -164,9 +172,26 @@ const Inputs = ({
 		setNightDifferentialHours
 	);
 
-	const isOvertimeDisabled =
-		activeSector === "selfemployed" || activeSector === "public";
+	const isOvertimeDisabled = activeSector === "selfemployed";
 	const isNightDiffDisabled = activeSector === "selfemployed";
+
+	const getOvertimeHelperText = () => {
+		if (activeSector === "selfemployed") {
+			return "Not applicable";
+		}
+		return "Assumes standard 25% rate";
+	};
+
+	const getNightDifferentialHelperText = () => {
+		if (activeSector === "selfemployed") {
+			return "Not applicable";
+		} else if (activeSector === "private") {
+			return "+10% pay from 10 PM to 6 AM";
+		} else if (activeSector === "public") {
+			return "+20% pay from 6 PM to 6 AM";
+		}
+		return "";
+	};
 
 	return (
 		<div
@@ -176,8 +201,7 @@ const Inputs = ({
 					: "bg-white text-gray-900"
 			}`}
 		>
-			{/* Grouped inputs container with consistent spacing */}
-			<div className="space-y-5">
+			<div className="space-y-3">
 				<div>
 					<label className="label">Employment Type</label>
 					<div className="flex mt-2 space-x-2 flex-wrap gap-y-2">
@@ -227,6 +251,7 @@ const Inputs = ({
 						useFormatter={false}
 						step={1}
 						min={0}
+						helperText={getOvertimeHelperText()}
 					/>
 
 					<InputField
@@ -239,14 +264,30 @@ const Inputs = ({
 						useFormatter={false}
 						step={1}
 						min={0}
+						helperText={getNightDifferentialHelperText()}
 					/>
+				</div>
+
+				<div>
+					<label className="label">Work Schedule</label>
+					<div className="flex mt-2 space-x-2 flex-wrap gap-y-2">
+						{WORK_SCHEDULE_OPTIONS.map((scheduleOpt) => (
+							<ToggleButton
+								key={scheduleOpt.id}
+								label={scheduleOpt.label}
+								isActive={workSchedule === scheduleOpt.id}
+								onClick={() => handleWorkScheduleChange(scheduleOpt.id)}
+								theme={theme}
+							/>
+						))}
+					</div>
 				</div>
 			</div>
 
-			<div className={"mt-5 text-sm text-gray-500"} data-html2canvas-ignore>
+			<div className={"mt-5 text-sm text-gray-500"}>
 				<strong>Note:</strong> This calculator is intended for estimation
-				purposes only, and is based on standard rates and schedules. It does not
-				account for holidays or other unique circumstances.
+				purposes only, it does not account for holidays or other unique
+				circumstances.
 			</div>
 		</div>
 	);

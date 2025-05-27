@@ -68,7 +68,7 @@ const Summary = ({
 		: numericTakeHomePay;
 
 	return (
-		<div className="relative mt-6">
+		<div className="relative">
 			<div
 				className={`p-6 rounded-lg border-b-4 border-[#4169e1] ${
 					theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900"
