@@ -41,20 +41,20 @@ const App = () => {
 
 	return (
 		<div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col relative">
-			<div className="flex-grow flex flex-col items-center justify-center p-4 mt-12 mb-12 md:mt-0 md:mb-0">
-				<div className="max-w-4xl w-full overflow-auto mb-8">
+			<div className="flex-grow flex flex-col items-center justify-center p-4 mt-12 mb-1 md:mt-0 md:mb-0">
+				<div className="max-w-4xl w-full overflow-auto mb-9">
 					<p className="text-center font-bold text-[#4169e1] dark:text-blue-400">
-						INCOME TAX CALCULATOR
+						NETICENTS
 					</p>
-					<h2 className="text-3xl font-bold text-center text-black dark:text-white mt-2">
-						How much are they taking from you?
+					<h2 className="text-3xl font-bold text-center text-black dark:text-white mt-1">
+						Income Tax Calculator PH
 					</h2>
-					<p className="text-center text-gray-500 dark:text-gray-300 mt-3">
-						Philippine tax rate per RA 10963
+					<p className="text-center text-gray-500 dark:text-gray-400 mt-2">
+						Updated with 2025 Tax Rates
 					</p>
 
 					<div
-						className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-3"
+						className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-5"
 						ref={formRef}
 					>
 						<div>
@@ -104,9 +104,9 @@ const App = () => {
 					href="https://nathanielseth.github.io/portfolio/"
 					target="_blank"
 					rel="noopener noreferrer"
-					className="text-zinc-400 dark:text-gray-300"
+					className="text-zinc-500 dark:text-gray-400"
 				>
-					made by nathanielseth.dev
+					nathanielseth.dev
 				</a>
 			</footer>
 

@@ -7,7 +7,11 @@ import {
 	computePagIbig,
 	computeGSIS,
 	parseFormattedNumber,
+	numberFormat,
 } from "../utils/calculation";
+
+const DE_MINIMIS_ANNUAL_LIMIT = 90000;
+const DE_MINIMIS_MONTHLY_LIMIT = DE_MINIMIS_ANNUAL_LIMIT / 12; // 7,500
 
 export const useSalaryCalculator = (
 	setMonthlySalary,
@@ -15,12 +19,10 @@ export const useSalaryCalculator = (
 	setTakeHomePay,
 	setWithholdingTax,
 	setSector,
-	setAllowanceTaxable,
 	setOvertimeHours,
 	setNightDifferentialHours
 ) => {
 	const [activeSector, setActiveSector] = useState("private");
-	const [allowanceTaxable, setAllowanceTaxableState] = useState(false);
 	const [monthlySalary, setMonthlySalaryValue] = useState("");
 	const [allowance, setAllowanceValue] = useState("");
 	const [overtimeHours, setOvertimeHoursValue] = useState("");
@@ -37,6 +39,34 @@ export const useSalaryCalculator = (
 			setOvertimeHours(0);
 		}
 	}, [activeSector, setOvertimeHours, setNightDifferentialHours]);
+
+	const getDeMinimisHelperText = useCallback(() => {
+		const salary = parseFormattedNumber(monthlySalary || "0");
+		const allowanceAmount = parseFormattedNumber(allowance || "0");
+		const monthlyLimit = DE_MINIMIS_MONTHLY_LIMIT;
+
+		if (allowanceAmount > 0 && salary <= 0) {
+			return "Enter basic pay to calculate de minimis benefits.";
+		}
+
+		if (allowanceAmount === 0) {
+			return `Tax-free up to ₱${numberFormat(
+				monthlyLimit.toFixed(0)
+			)}/month (₱${numberFormat(DE_MINIMIS_ANNUAL_LIMIT)}/year)`;
+		}
+
+		if (allowanceAmount <= monthlyLimit) {
+			const remaining = monthlyLimit - allowanceAmount;
+			return `Tax-free (₱${numberFormat(
+				remaining.toFixed(0)
+			)} remaining this month)`;
+		} else {
+			const excess = allowanceAmount - monthlyLimit;
+			return `Exceeds limit by ₱${numberFormat(
+				excess.toFixed(0)
+			)} and will be taxed.`;
+		}
+	}, [allowance, monthlySalary]);
 
 	const calculatePremiumPay = useCallback(
 		(hourlyRate, otHours, ndHours, sector) => {
@@ -96,7 +126,14 @@ export const useSalaryCalculator = (
 	);
 
 	const calculate = useCallback(
-		(salary, allowanceAmount, isAllowanceTaxable, sector, otHours, ndHours) => {
+		(salary, allowanceAmount, sector, otHours, ndHours) => {
+			// DON'T CALCULATE IF NO BASIC SALARY
+			if (salary <= 0) {
+				setWithholdingTax(0);
+				setTakeHomePay(0);
+				return;
+			}
+
 			const baseSalary = salary;
 			const hourlyRate = salary / (22 * 8);
 
@@ -110,9 +147,13 @@ export const useSalaryCalculator = (
 
 			const totalGrossPay = baseSalary + totalPremiumPay;
 
-			const taxableSalary = isAllowanceTaxable
-				? totalGrossPay + allowanceAmount
-				: totalGrossPay;
+			const monthlyDeMinimisLimit = DE_MINIMIS_MONTHLY_LIMIT; // 7,500
+			const taxableAllowance = Math.max(
+				0,
+				allowanceAmount - monthlyDeMinimisLimit
+			);
+
+			const taxableSalary = totalGrossPay + taxableAllowance;
 			const annualIncome = taxableSalary * 12;
 
 			const contributions = {
@@ -158,14 +199,6 @@ export const useSalaryCalculator = (
 			const finalTakeHome = Math.max(netPay + allowanceAmount, 0);
 
 			setTakeHomePay(parseFloat(finalTakeHome.toFixed(2)));
-
-			return {
-				baseSalary,
-				hourlyRate,
-				premiumPayBreakdown: premiumPayResult.breakdown,
-				totalGrossPay,
-				finalTakeHome,
-			};
 		},
 		[setWithholdingTax, setTakeHomePay, calculatePremiumPay]
 	);
@@ -189,20 +222,12 @@ export const useSalaryCalculator = (
 			const allowanceAmount = parseValue(allowance);
 			const otHours = parseValue(overtimeHours);
 			const ndHours = parseValue(nightDifferentialHours);
-			calculate(
-				salary,
-				allowanceAmount,
-				allowanceTaxable,
-				activeSector,
-				otHours,
-				ndHours
-			);
+			calculate(salary, allowanceAmount, activeSector, otHours, ndHours);
 		},
 		[
 			allowance,
 			overtimeHours,
 			nightDifferentialHours,
-			allowanceTaxable,
 			activeSector,
 			calculate,
 			parseValue,
@@ -225,54 +250,16 @@ export const useSalaryCalculator = (
 			const salary = parseValue(monthlySalary);
 			const otHours = parseValue(overtimeHours);
 			const ndHours = parseValue(nightDifferentialHours);
-			calculate(
-				salary,
-				allowanceAmount,
-				allowanceTaxable,
-				activeSector,
-				otHours,
-				ndHours
-			);
+			calculate(salary, allowanceAmount, activeSector, otHours, ndHours);
 		},
 		[
 			monthlySalary,
-			overtimeHours,
-			nightDifferentialHours,
-			allowanceTaxable,
-			activeSector,
-			calculate,
-			parseValue,
-			setAllowance,
-		]
-	);
-
-	const handleTaxableChange = useCallback(
-		(taxable) => {
-			setAllowanceTaxableState(taxable);
-			setAllowanceTaxable(taxable);
-
-			const salary = parseValue(monthlySalary);
-			const allowanceAmount = parseValue(allowance);
-			const otHours = parseValue(overtimeHours);
-			const ndHours = parseValue(nightDifferentialHours);
-			calculate(
-				salary,
-				allowanceAmount,
-				taxable,
-				activeSector,
-				otHours,
-				ndHours
-			);
-		},
-		[
-			monthlySalary,
-			allowance,
 			overtimeHours,
 			nightDifferentialHours,
 			activeSector,
 			calculate,
 			parseValue,
-			setAllowanceTaxable,
+			setAllowance,
 		]
 	);
 
@@ -285,21 +272,13 @@ export const useSalaryCalculator = (
 			const allowanceAmount = parseValue(allowance);
 			const otHours = parseValue(overtimeHours);
 			const ndHours = parseValue(nightDifferentialHours);
-			calculate(
-				salary,
-				allowanceAmount,
-				allowanceTaxable,
-				sector,
-				otHours,
-				ndHours
-			);
+			calculate(salary, allowanceAmount, sector, otHours, ndHours);
 		},
 		[
 			monthlySalary,
 			allowance,
 			overtimeHours,
 			nightDifferentialHours,
-			allowanceTaxable,
 			calculate,
 			parseValue,
 			setSector,
@@ -324,21 +303,13 @@ export const useSalaryCalculator = (
 			const salary = parseValue(monthlySalary);
 			const allowanceAmount = parseValue(allowance);
 			const ndHours = parseValue(nightDifferentialHours);
-			calculate(
-				salary,
-				allowanceAmount,
-				allowanceTaxable,
-				activeSector,
-				otHours,
-				ndHours
-			);
+			calculate(salary, allowanceAmount, activeSector, otHours, ndHours);
 		},
 		[
 			activeSector,
 			monthlySalary,
 			allowance,
 			nightDifferentialHours,
-			allowanceTaxable,
 			calculate,
 			parseValue,
 			setOvertimeHours,
@@ -363,21 +334,13 @@ export const useSalaryCalculator = (
 			const salary = parseValue(monthlySalary);
 			const allowanceAmount = parseValue(allowance);
 			const otHours = parseValue(overtimeHours);
-			calculate(
-				salary,
-				allowanceAmount,
-				allowanceTaxable,
-				activeSector,
-				otHours,
-				ndHours
-			);
+			calculate(salary, allowanceAmount, activeSector, otHours, ndHours);
 		},
 		[
 			activeSector,
 			monthlySalary,
 			allowance,
 			overtimeHours,
-			allowanceTaxable,
 			calculate,
 			parseValue,
 			setNightDifferentialHours,
@@ -386,7 +349,6 @@ export const useSalaryCalculator = (
 
 	return {
 		activeSector,
-		allowanceTaxable,
 		monthlySalary,
 		allowance,
 		overtimeHours,
@@ -394,8 +356,8 @@ export const useSalaryCalculator = (
 		handleSalaryChange,
 		handleAllowanceChange,
 		handleSectorChange,
-		handleTaxableChange,
 		handleOvertimeHoursChange,
 		handleNightDifferentialHoursChange,
+		getDeMinimisHelperText,
 	};
 };

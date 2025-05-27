@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import { useSalaryCalculator } from "../utils/useSalaryCalculator";
-import { useEffect, useState } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { handleInput, parseFormattedNumber } from "../utils/calculation";
 
@@ -8,11 +7,6 @@ const SECTOR_OPTIONS = [
 	{ id: "private", label: "Private" },
 	{ id: "public", label: "Public" },
 	{ id: "selfemployed", label: "Self-Employed" },
-];
-
-const TAXABLE_OPTIONS = [
-	{ id: true, label: "Taxable" },
-	{ id: false, label: "Non-Taxable" },
 ];
 
 const InputField = ({
@@ -25,6 +19,7 @@ const InputField = ({
 	useFormatter = false,
 	step = 1,
 	min = 0,
+	helperText = null,
 }) => {
 	const formatValue = (val) =>
 		useFormatter ? handleInput(val.toString()) : val.toString();
@@ -52,7 +47,7 @@ const InputField = ({
 	};
 
 	return (
-		<div className="mb-4">
+		<div>
 			<label className="label">{label}</label>
 			<div className="relative input-wrapper">
 				<input
@@ -98,6 +93,9 @@ const InputField = ({
 					</button>
 				</div>
 			</div>
+			{helperText && (
+				<div className="mt-1 text-xs text-gray-500">{helperText}</div>
+			)}
 		</div>
 	);
 };
@@ -112,6 +110,7 @@ InputField.propTypes = {
 	useFormatter: PropTypes.bool,
 	step: PropTypes.number,
 	min: PropTypes.number,
+	helperText: PropTypes.string,
 };
 
 const ToggleButton = ({ label, isActive, onClick, theme }) => (
@@ -139,7 +138,6 @@ const Inputs = ({
 	setTakeHomePay,
 	setWithholdingTax,
 	setSector,
-	setAllowanceTaxable,
 	theme,
 	overtimeHours,
 	setOvertimeHours,
@@ -148,33 +146,23 @@ const Inputs = ({
 }) => {
 	const {
 		activeSector,
-		allowanceTaxable,
 		monthlySalary: displayMonthlySalary,
 		allowance: displayAllowance,
 		handleSalaryChange,
 		handleAllowanceChange,
 		handleSectorChange,
-		handleTaxableChange,
 		handleOvertimeHoursChange,
 		handleNightDifferentialHoursChange,
+		getDeMinimisHelperText,
 	} = useSalaryCalculator(
 		setMonthlySalary,
 		setAllowance,
 		setTakeHomePay,
 		setWithholdingTax,
 		setSector,
-		setAllowanceTaxable,
 		setOvertimeHours,
 		setNightDifferentialHours
 	);
-
-	const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-	useEffect(() => {
-		const checkMobile = () => setIsMobile(window.innerWidth < 768);
-		window.addEventListener("resize", checkMobile);
-		return () => window.removeEventListener("resize", checkMobile);
-	}, []);
 
 	const isOvertimeDisabled =
 		activeSector === "selfemployed" || activeSector === "public";
@@ -188,22 +176,23 @@ const Inputs = ({
 					: "bg-white text-gray-900"
 			}`}
 		>
-			<div className="mb-4">
-				<label className="label">Employment Type</label>
-				<div className="flex mt-2 space-x-2 flex-wrap gap-y-2">
-					{SECTOR_OPTIONS.map((sectorOpt) => (
-						<ToggleButton
-							key={sectorOpt.id}
-							label={sectorOpt.label}
-							isActive={activeSector === sectorOpt.id}
-							onClick={() => handleSectorChange(sectorOpt.id)}
-							theme={theme}
-						/>
-					))}
+			{/* Grouped inputs container with consistent spacing */}
+			<div className="space-y-5">
+				<div>
+					<label className="label">Employment Type</label>
+					<div className="flex mt-2 space-x-2 flex-wrap gap-y-2">
+						{SECTOR_OPTIONS.map((sectorOpt) => (
+							<ToggleButton
+								key={sectorOpt.id}
+								label={sectorOpt.label}
+								isActive={activeSector === sectorOpt.id}
+								onClick={() => handleSectorChange(sectorOpt.id)}
+								theme={theme}
+							/>
+						))}
+					</div>
 				</div>
-			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-1">
 				<InputField
 					label="Monthly Basic Pay"
 					value={displayMonthlySalary}
@@ -216,7 +205,7 @@ const Inputs = ({
 				/>
 
 				<InputField
-					label="Allowance"
+					label="De Minimis Allowance"
 					value={displayAllowance}
 					onChange={handleAllowanceChange}
 					placeholder="0.00"
@@ -224,59 +213,40 @@ const Inputs = ({
 					useFormatter={true}
 					step={500}
 					min={0}
+					helperText={getDeMinimisHelperText()}
 				/>
-			</div>
 
-			<div className="mb-4">
-				<label className="label">Is Allowance Taxable?</label>
-				<div className="flex mt-2 space-x-2">
-					{TAXABLE_OPTIONS.map((option) => (
-						<ToggleButton
-							key={option.label}
-							label={option.label}
-							isActive={allowanceTaxable === option.id}
-							onClick={() => handleTaxableChange(option.id)}
-							theme={theme}
-						/>
-					))}
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<InputField
+						label="Overtime Hours"
+						value={isOvertimeDisabled ? "" : overtimeHours}
+						onChange={handleOvertimeHoursChange}
+						placeholder={isOvertimeDisabled ? "N/A" : "0"}
+						theme={theme}
+						disabled={isOvertimeDisabled}
+						useFormatter={false}
+						step={1}
+						min={0}
+					/>
+
+					<InputField
+						label="Night Differential Hours"
+						value={isNightDiffDisabled ? "" : nightDifferentialHours}
+						onChange={handleNightDifferentialHoursChange}
+						placeholder={isNightDiffDisabled ? "N/A" : "0"}
+						theme={theme}
+						disabled={isNightDiffDisabled}
+						useFormatter={false}
+						step={1}
+						min={0}
+					/>
 				</div>
 			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-				<InputField
-					label="Overtime Hours"
-					value={isOvertimeDisabled ? "" : overtimeHours}
-					onChange={handleOvertimeHoursChange}
-					placeholder={isOvertimeDisabled ? "N/A" : "0"}
-					theme={theme}
-					disabled={isOvertimeDisabled}
-					useFormatter={false}
-					step={1}
-					min={0}
-				/>
-
-				<InputField
-					label="Night Differential Hours"
-					value={isNightDiffDisabled ? "" : nightDifferentialHours}
-					onChange={handleNightDifferentialHoursChange}
-					placeholder={isNightDiffDisabled ? "N/A" : "0"}
-					theme={theme}
-					disabled={isNightDiffDisabled}
-					useFormatter={false}
-					step={1}
-					min={0}
-				/>
-			</div>
-
-			<div
-				className={`mt-1 text-sm ${
-					theme === "dark" ? "text-gray-400" : "text-gray-600"
-				}`}
-				data-html2canvas-ignore
-			>
-				Note: This web application provides estimates based on standard working
-				conditions and does not factor in holidays or other specific
-				circumstances.
+			<div className={"mt-5 text-sm text-gray-500"} data-html2canvas-ignore>
+				<strong>Note:</strong> This calculator is intended for estimation
+				purposes only, and is based on standard rates and schedules. It does not
+				account for holidays or other unique circumstances.
 			</div>
 		</div>
 	);
@@ -288,7 +258,6 @@ Inputs.propTypes = {
 	setSector: PropTypes.func.isRequired,
 	setTakeHomePay: PropTypes.func.isRequired,
 	setWithholdingTax: PropTypes.func.isRequired,
-	setAllowanceTaxable: PropTypes.func.isRequired,
 	theme: PropTypes.string.isRequired,
 	overtimeHours: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 		.isRequired,

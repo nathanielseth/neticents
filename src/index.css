@@ -11,15 +11,15 @@ body {
 }
 
 .btn {
-	@apply py-2.5 px-4 border rounded-md cursor-pointer transition-all duration-200 font-medium text-sm;
+	@apply py-2.5 px-3 border rounded-md cursor-pointer font-medium text-sm;
 	border-color: rgb(209 213 219);
-	background-color: white;
+	background-color: rgb(229 231 235);
 	color: rgb(55 65 81);
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .btn:hover {
-	background-color: rgb(243 244 246);
+	background-color: rgb(209 213 219); /* bg-gray-300 */
 	border-color: rgb(156 163 175);
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -63,13 +63,13 @@ body {
 
 /* dark mode styles */
 .dark-mode.btn {
-	background-color: rgb(31 41 55);
+	background-color: rgb(55 65 81);
 	border-color: rgb(75 85 99);
 	color: rgb(209 213 219);
 }
 
 .dark-mode.btn:hover {
-	background-color: rgb(55 65 81);
+	background-color: rgb(75 85 99); /* bg-gray-600 */
 	border-color: rgb(107 114 128);
 }
 

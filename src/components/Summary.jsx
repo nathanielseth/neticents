@@ -73,7 +73,7 @@ const Summary = ({
 				className={`p-6 rounded-lg border-b-4 border-[#4169e1] ${
 					theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900"
 				}`}
-				style={{ boxShadow: "0 -1px 15px rgba(0, 0, 0, 0.15)" }}
+				style={{ boxShadow: "0 0 12px rgba(0, 0, 0, 0.1)" }}
 			>
 				<div className="flex justify-center mb-4">
 					<div
