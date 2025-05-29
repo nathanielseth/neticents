@@ -16,7 +16,7 @@ const Summary = ({
 	activeSector,
 	theme,
 }) => {
-	const [isAnnual, setIsAnnual] = useState(false);
+	const [payPeriod, setPayPeriod] = useState("monthly");
 
 	const numericTakeHomePay = parseFloat(takeHomePay) || 0;
 	const numericMonthlySalary = parseFloat(monthlySalary) || 0;
@@ -59,13 +59,26 @@ const Summary = ({
 		0
 	);
 
-	const displayedTotalDeductions = isAnnual
-		? totalDeductions * 12
-		: totalDeductions;
+	const getMultiplier = () => {
+		switch (payPeriod) {
+			case "biweekly":
+				return 0.5;
+			case "annual":
+				return 12;
+			default:
+				return 1;
+		}
+	};
 
-	const displayedTakeHomePay = isAnnual
-		? numericTakeHomePay * 12
-		: numericTakeHomePay;
+	const multiplier = getMultiplier();
+	const displayedTotalDeductions = totalDeductions * multiplier;
+	const displayedTakeHomePay = numericTakeHomePay * multiplier;
+
+	const payPeriodOptions = [
+		{ value: "monthly", label: "Monthly" },
+		{ value: "annual", label: "Annual" },
+		{ value: "biweekly", label: "Biweekly" },
+	];
 
 	return (
 		<div className="relative">
@@ -75,43 +88,34 @@ const Summary = ({
 				}`}
 				style={{ boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)" }}
 			>
-				<div className="flex justify-center mb-4">
+				<div className="flex justify-center mb-5">
 					<div
-						className={`flex items-center space-x-1 p-1 rounded-full ${
+						className={`flex items-center p-1 rounded-full ${
 							theme === "dark" ? "bg-gray-700" : "bg-gray-200"
 						}`}
 					>
-						<button
-							className={`px-2 py-1 rounded-full ${
-								!isAnnual
-									? "bg-[#4169e1] text-white"
-									: theme === "dark"
-									? "bg-transparent text-gray-300 hover:bg-gray-600"
-									: "bg-transparent text-gray-600 hover:bg-gray-300"
-							}`}
-							onClick={() => setIsAnnual(false)}
-						>
-							Monthly
-						</button>
-						<button
-							className={`px-2 py-1 rounded-full ${
-								isAnnual
-									? "bg-[#4169e1] text-white"
-									: theme === "dark"
-									? "bg-transparent text-gray-300 hover:bg-gray-600"
-									: "bg-transparent text-gray-600 hover:bg-gray-300"
-							}`}
-							onClick={() => setIsAnnual(true)}
-						>
-							Annual
-						</button>
+						{payPeriodOptions.map((option) => (
+							<button
+								key={option.value}
+								className={`px-3 py-1 rounded-full ${
+									payPeriod === option.value
+										? "bg-[#4169e1] text-white shadow-sm"
+										: theme === "dark"
+										? "bg-transparent text-gray-300 hover:bg-gray-600"
+										: "bg-transparent text-gray-600 hover:bg-gray-300"
+								}`}
+								onClick={() => setPayPeriod(option.value)}
+							>
+								{option.label}
+							</button>
+						))}
 					</div>
 				</div>
 
 				<h3
 					className={`text-md font-normal text-center ${
-						theme === "dark" ? "text-gray-300" : "text-gray-500"
-					} mt-1 mb-1`}
+						theme === "dark" ? "text-gray-300" : "text-gray-600"
+					} mt-1 mb-2`}
 				>
 					Take Home Pay:
 				</h3>
@@ -124,6 +128,7 @@ const Summary = ({
 						₱
 						{displayedTakeHomePay.toLocaleString("en-US", {
 							minimumFractionDigits: 2,
+							maximumFractionDigits: 2,
 						})}
 					</h1>
 				</div>
@@ -139,7 +144,7 @@ const Summary = ({
 					}`}
 				>
 					{visibleDeductions.map(([key, value]) => {
-						const displayedValue = isAnnual ? value * 12 : value;
+						const displayedValue = value * multiplier;
 
 						return (
 							<div className="flex justify-between items-center" key={key}>
