@@ -3,10 +3,10 @@ import Inputs from "./components/Inputs";
 import Summary from "./components/Summary";
 import { useTheme } from "./utils/themeContext";
 import { HiSun, HiMoon } from "react-icons/hi";
+import { generateTaxSummaryPDF } from "./utils/pdfGenerator";
 
 const App = () => {
 	const { theme, toggleTheme } = useTheme();
-
 	const [monthlySalary, setMonthlySalary] = useState("");
 	const [allowance, setAllowance] = useState("");
 	const [allowanceTaxable, setAllowanceTaxable] = useState(false);
@@ -15,12 +15,36 @@ const App = () => {
 	const [withholdingTax, setWithholdingTax] = useState(0);
 	const [overtimeHours, setOvertimeHours] = useState("");
 	const [nightDifferentialHours, setNightDifferentialHours] = useState("");
-
+	const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 	const formRef = useRef(null);
 
 	const handleDownload = async () => {
-		// TODO: Implement alternative PDF generation
-		console.log("PDF generation functionality to be implemented");
+		setIsGeneratingPDF(true);
+
+		try {
+			const taxData = {
+				monthlySalary: Number(monthlySalary) || 0,
+				allowance: Number(allowance) || 0,
+				allowanceTaxable,
+				sector,
+				takeHomePay: Number(takeHomePay),
+				withholdingTax: Number(withholdingTax),
+				overtimeHours: Number(overtimeHours) || 0,
+				nightDifferentialHours: Number(nightDifferentialHours) || 0,
+				generatedDate: new Date().toLocaleDateString("en-PH", {
+					year: "numeric",
+					month: "long",
+					day: "numeric",
+				}),
+			};
+
+			await generateTaxSummaryPDF(taxData);
+		} catch (error) {
+			console.error("Error generating PDF:", error);
+			alert("Failed to generate PDF. Please try again.");
+		} finally {
+			setIsGeneratingPDF(false);
+		}
 	};
 
 	return (
@@ -36,7 +60,6 @@ const App = () => {
 					<p className="text-center text-gray-500 dark:text-gray-400 mt-2">
 						Updated for 2025
 					</p>
-
 					<div
 						className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-5"
 						ref={formRef}
@@ -56,7 +79,6 @@ const App = () => {
 								setNightDifferentialHours={setNightDifferentialHours}
 							/>
 						</div>
-
 						<div className="p-2 flex flex-col justify-center">
 							<Summary
 								theme={theme}
@@ -72,17 +94,21 @@ const App = () => {
 							/>
 							<div className="mt-4 flex justify-center" data-html2canvas-ignore>
 								<button
-									className="w-full py-3 text-white bg-[#4169e1] dark:bg-blue-600 rounded-lg transition duration-100"
+									className={`w-full py-3 text-white rounded-lg transition duration-100 ${
+										isGeneratingPDF
+											? "bg-gray-400 cursor-not-allowed"
+											: "bg-[#4169e1] hover:bg-blue-700"
+									}`}
 									onClick={handleDownload}
+									disabled={isGeneratingPDF}
 								>
-									Save as PDF
+									{isGeneratingPDF ? "Generating PDF..." : "Save as PDF"}
 								</button>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-
 			<footer className="w-full bg-white dark:bg-gray-900 p-4 text-center text-sm md:fixed md:bottom-0">
 				<a
 					href="https://nathanielseth.github.io/portfolio/"
@@ -93,7 +119,6 @@ const App = () => {
 					nathanielseth.dev
 				</a>
 			</footer>
-
 			<button
 				type="button"
 				aria-label="Toggle theme"

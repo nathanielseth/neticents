@@ -55,8 +55,8 @@ export const useSalaryCalculator = (
 
 		if (allowanceAmount === 0) {
 			return `Tax-free up to ₱${numberFormat(
-				monthlyLimit.toFixed(0)
-			)}/month (₱${numberFormat(DE_MINIMIS_ANNUAL_LIMIT)}/year)`;
+				DE_MINIMIS_ANNUAL_LIMIT
+			)}/year (₱${numberFormat(monthlyLimit.toFixed(0))}/month)`;
 		}
 
 		if (allowanceAmount <= monthlyLimit) {
