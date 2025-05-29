@@ -53,16 +53,10 @@ export const useSalaryCalculator = (
 			return "Enter basic pay to calculate de minimis benefits";
 		}
 
-		if (allowanceAmount === 0) {
-			return `Tax-free up to ₱${numberFormat(
-				DE_MINIMIS_ANNUAL_LIMIT
-			)}/year (₱${numberFormat(monthlyLimit.toFixed(0))}/month)`;
-		}
-
 		if (allowanceAmount <= monthlyLimit) {
 			return `Tax-free up to ₱${numberFormat(
-				monthlyLimit.toFixed(0)
-			)}/month (₱${numberFormat(DE_MINIMIS_ANNUAL_LIMIT)}/year)`;
+				DE_MINIMIS_ANNUAL_LIMIT
+			)} annually (₱${numberFormat(monthlyLimit.toFixed(0))}/month)`;
 		} else {
 			return "Exceeds limit, excess will be taxed";
 		}
@@ -126,7 +120,6 @@ export const useSalaryCalculator = (
 
 	const calculate = useCallback(
 		(salary, allowanceAmount, sector, otHours, ndHours, schedule) => {
-			// DON'T CALCULATE IF NO BASIC SALARY
 			if (salary <= 0) {
 				setWithholdingTax(0);
 				setTakeHomePay(0);
@@ -211,7 +204,7 @@ export const useSalaryCalculator = (
 		(e) => {
 			let raw = e.target.value;
 			const stringValue = String(raw);
-			if (stringValue.length > 14) return;
+			if (stringValue.length > 15) return;
 
 			const formattedValue = handleInput(e.target.value);
 			setMonthlySalaryValue(formattedValue);
@@ -247,7 +240,7 @@ export const useSalaryCalculator = (
 		(e) => {
 			let raw = e.target.value;
 			const stringValue = String(raw);
-			if (stringValue.length > 14) return;
+			if (stringValue.length > 15) return;
 
 			const formattedValue = handleInput(e.target.value);
 			setAllowanceValue(formattedValue);

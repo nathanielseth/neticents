@@ -48,22 +48,33 @@ const App = () => {
 	};
 
 	return (
-		<div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col relative">
+		<div className="min-h-screen bg-[#fbfcfd] dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col relative">
 			<div className="flex-grow flex flex-col items-center justify-center p-4 mt-12 mb-1 md:mt-0 md:mb-0">
-				<div className="max-w-4xl w-full overflow-auto mb-9">
-					<p className="text-center font-bold text-[#4169e1] dark:text-blue-400">
-						NETICENTS
-					</p>
-					<h2 className="text-3xl font-bold text-center text-black dark:text-white mt-1">
-						Income Tax Calculator PH
-					</h2>
-					<p className="text-center text-gray-500 dark:text-gray-400 mt-2">
-						Updated for 2025
-					</p>
-					<div
-						className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-5"
-						ref={formRef}
-					>
+				<div className="max-w-4xl w-full overflow-auto mb-8">
+					<div className="text-left mb-9 relative">
+						<h2 className="text-3xl font-bold text-black dark:text-white mt-1">
+							Philippine Income Tax Calculator
+						</h2>
+						<p className="text-gray-500 dark:text-gray-400 mt-2">
+							Rates and brackets up-to-date for 2025
+						</p>
+						<button
+							type="button"
+							aria-label="Toggle theme"
+							className="absolute bottom-0 right-0 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition duration-100"
+							onClick={toggleTheme}
+						>
+							{theme === "dark" ? <HiSun size={22} /> : <HiMoon size={24} />}
+						</button>
+					</div>
+
+					<div className="relative">
+						<div className="absolute inset-0 flex items-center">
+							<div className="w-full border-t border-gray-300 dark:border-gray-700 opacity-70 mb-10"></div>
+						</div>
+					</div>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-8" ref={formRef}>
 						<div>
 							<Inputs
 								theme={theme}
@@ -92,9 +103,9 @@ const App = () => {
 								overtimeHours={Number(overtimeHours) || 0}
 								nightDifferentialHours={Number(nightDifferentialHours) || 0}
 							/>
-							<div className="mt-4 flex justify-center" data-html2canvas-ignore>
+							<div className="mt-4 flex justify-center">
 								<button
-									className={`w-full py-3 text-white rounded-lg transition duration-100 ${
+									className={`w-full py-3 text-white rounded-lg transition duration-100 shadow-md hover:shadow-lg ${
 										isGeneratingPDF
 											? "bg-gray-400 cursor-not-allowed"
 											: "bg-[#4169e1] hover:bg-blue-700"
@@ -119,14 +130,6 @@ const App = () => {
 					nathanielseth.dev
 				</a>
 			</footer>
-			<button
-				type="button"
-				aria-label="Toggle theme"
-				className="fixed bottom-6 right-6 bg-gray-800 dark:bg-gray-100 text-white dark:text-gray-800 p-2 rounded-full shadow-lg hover:bg-gray-700 dark:hover:bg-gray-300 transition duration-100"
-				onClick={toggleTheme}
-			>
-				{theme === "dark" ? <HiSun size={26} /> : <HiMoon size={26} />}
-			</button>
 		</div>
 	);
 };

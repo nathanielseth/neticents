@@ -4,12 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-	margin: 0;
-	background-color: white;
-	color: black;
-}
-
 .btn {
 	@apply py-2.5 px-3 border rounded-md cursor-pointer font-medium text-sm;
 	border-color: rgb(209 213 219);
@@ -103,10 +97,4 @@ body {
 .dark-mode .label,
 .dark-mode.label {
 	color: white;
-}
-
-@layer base {
-	img {
-		display: initial;
-	}
 }

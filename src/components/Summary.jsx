@@ -73,7 +73,7 @@ const Summary = ({
 				className={`p-6 rounded-lg border-b-4 border-[#4169e1] ${
 					theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900"
 				}`}
-				style={{ boxShadow: "0 0 12px rgba(0, 0, 0, 0.1)" }}
+				style={{ boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)" }}
 			>
 				<div className="flex justify-center mb-4">
 					<div
@@ -86,8 +86,8 @@ const Summary = ({
 								!isAnnual
 									? "bg-[#4169e1] text-white"
 									: theme === "dark"
-									? "bg-transparent text-gray-300"
-									: "bg-transparent text-gray-600"
+									? "bg-transparent text-gray-300 hover:bg-gray-600"
+									: "bg-transparent text-gray-600 hover:bg-gray-300"
 							}`}
 							onClick={() => setIsAnnual(false)}
 						>
@@ -98,8 +98,8 @@ const Summary = ({
 								isAnnual
 									? "bg-[#4169e1] text-white"
 									: theme === "dark"
-									? "bg-transparent text-gray-300"
-									: "bg-transparent text-gray-600"
+									? "bg-transparent text-gray-300 hover:bg-gray-600"
+									: "bg-transparent text-gray-600 hover:bg-gray-300"
 							}`}
 							onClick={() => setIsAnnual(true)}
 						>

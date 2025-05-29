@@ -176,9 +176,7 @@ const TaxSummaryPDF = (props) => {
 					)}
 					{nightDifferentialHours > 0 && (
 						<View style={styles.row}>
-							<Text style={styles.label}>
-								Night Differential Hours per Month:
-							</Text>
+							<Text style={styles.label}>Night Differential Hours:</Text>
 							<Text style={styles.value}>{nightDifferentialHours} hours</Text>
 						</View>
 					)}
