@@ -98,31 +98,30 @@ const styles = StyleSheet.create({
 	},
 });
 
-const getSectorDisplayName = (sector) => {
-	const sectorNames = {
-		private: "Private Employee",
-		public: "Government Employee",
-		selfemployed: "Self-Employed Individual",
-	};
-	return sectorNames[sector] || "Unknown";
+const SECTOR_NAMES = {
+	private: "Private Employee",
+	public: "Government Employee",
+	selfemployed: "Self-Employed Individual",
 };
 
-const getDeductionLabel = (key) => {
-	const labels = {
-		withholdingTax: "Withholding Tax",
-		gsis: "GSIS Contribution",
-		sss: "SSS Contribution",
-		philHealth: "PhilHealth Contribution",
-		pagIbig: "Pag-IBIG Contribution",
-	};
-	return labels[key] || key;
+const DEDUCTION_LABELS = {
+	withholdingTax: "Withholding Tax",
+	gsis: "GSIS Contribution",
+	sss: "SSS Contribution",
+	philHealth: "PhilHealth Contribution",
+	pagIbig: "Pag-IBIG Contribution",
 };
+
+const getSectorDisplayName = (sector) => SECTOR_NAMES[sector] || "Unknown";
+
+const getDeductionLabel = (key) => DEDUCTION_LABELS[key] || key;
 
 const formatCurrency = (value) => {
-	return value.toLocaleString("en-PH", {
-		minimumFractionDigits: 0,
+	const formatted = Number(value).toLocaleString("en-PH", {
+		minimumFractionDigits: 2,
 		maximumFractionDigits: 2,
 	});
+	return `P${formatted}`;
 };
 
 const TaxSummaryPDF = (props) => {
@@ -145,7 +144,7 @@ const TaxSummaryPDF = (props) => {
 		<Document>
 			<Page size="A4" style={styles.page}>
 				<View style={styles.header}>
-					<Text style={styles.subtitle}>Income Tax Summary (PHP)</Text>
+					<Text style={styles.subtitle}>Income Tax Summary</Text>
 					<Text style={styles.date}>Generated on {generatedDate}</Text>
 				</View>
 
@@ -184,27 +183,18 @@ const TaxSummaryPDF = (props) => {
 
 				<View style={styles.section}>
 					<Text style={styles.sectionTitle}>Monthly Deductions</Text>
-					{withholdingTax > 0 && (
-						<View style={styles.row}>
-							<Text style={styles.label}>Withholding Tax:</Text>
-							<Text style={styles.value}>{formatCurrency(withholdingTax)}</Text>
-						</View>
-					)}
-					{visibleDeductions && visibleDeductions.length > 0
-						? visibleDeductions.map(([key, value]) => {
-								if (key === "withholdingTax") return null;
-								return (
-									<View key={key} style={styles.row}>
-										<Text style={styles.label}>{getDeductionLabel(key)}:</Text>
-										<Text style={styles.value}>{formatCurrency(value)}</Text>
-									</View>
-								);
-						  })
-						: withholdingTax <= 0 && (
-								<View style={styles.row}>
-									<Text style={styles.label}>No deductions calculated</Text>
-								</View>
-						  )}
+					<View style={styles.row}>
+						<Text style={styles.label}>Withholding Tax:</Text>
+						<Text style={styles.value}>{formatCurrency(withholdingTax)}</Text>
+					</View>
+					{visibleDeductions
+						.filter(([key]) => key !== "withholdingTax")
+						.map(([key, value]) => (
+							<View key={key} style={styles.row}>
+								<Text style={styles.label}>{getDeductionLabel(key)}:</Text>
+								<Text style={styles.value}>{formatCurrency(value)}</Text>
+							</View>
+						))}
 				</View>
 
 				<View style={styles.section}>
@@ -260,7 +250,6 @@ const TaxSummaryPDF = (props) => {
 					</Text>
 				</View>
 
-				{/* Footer */}
 				<View style={styles.footer}>
 					<Text>nathanielseth.github.io/neticents</Text>
 				</View>

@@ -62,7 +62,7 @@ const Summary = ({
 	const getMultiplier = () => {
 		switch (payPeriod) {
 			case "biweekly":
-				return 0.5;
+				return 12 / 26;
 			case "annual":
 				return 12;
 			default:
@@ -83,8 +83,10 @@ const Summary = ({
 	return (
 		<div className="relative">
 			<div
-				className={`p-6 rounded-lg border-b-4 border-[#4169e1] ${
-					theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+				className={`p-6 rounded-lg border-t border-l border-r border-b-4 ${
+					theme === "dark"
+						? "bg-gray-800 text-white border-t-gray-700 border-l-gray-700 border-r-gray-700 border-b-[#4169e1]"
+						: "bg-white text-gray-900 border-t-gray-200 border-l-gray-200 border-r-gray-200 border-b-[#4169e1]"
 				}`}
 				style={{ boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)" }}
 			>
