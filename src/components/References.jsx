@@ -16,7 +16,7 @@ const References = ({ theme }) => {
 		},
 		{
 			title: "Circular No. 460",
-			subtitle: "Pag-Ibig Contribution",
+			subtitle: "Pag-IBIG Contribution",
 			url: "https://www.philhealth.gov.ph/circulars/2019/circ2019-0009.pdf",
 			category: "pagibig",
 		},
@@ -94,7 +94,7 @@ const References = ({ theme }) => {
 				<div className="absolute inset-0 flex items-center">
 					<div
 						className={`w-full border-t ${
-							theme === "dark" ? "border-gray-600" : "border-gray-300"
+							theme === "dark" ? "border-gray-700" : "border-gray-300"
 						}`}
 					></div>
 				</div>
@@ -113,7 +113,7 @@ const References = ({ theme }) => {
 
 			<div
 				className={`p-6 rounded-lg ${
-					theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+					theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
 				} border ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
 			>
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -125,8 +125,8 @@ const References = ({ theme }) => {
 							rel="noopener noreferrer"
 							className={`block p-3 rounded-lg border ${
 								theme === "dark"
-									? "bg-gray-700 text-gray-300 border-gray-600"
-									: "bg-gray-50 text-gray-700 border-gray-200"
+									? "bg-gray-800 text-gray-300 border-gray-600"
+									: "bg-gray-100 text-gray-700 border-gray-200"
 							} ${getHoverClasses(link.category)}`}
 						>
 							<div className="font-medium text-sm mb-1">{link.title}</div>

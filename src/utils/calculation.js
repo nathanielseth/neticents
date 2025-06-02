@@ -1,16 +1,4 @@
-export const numberFormat = (num) =>
-	num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-export const parseFormattedNumber = (str) => {
-	const parsedValue = parseFloat(str.replace(/[^0-9.]/g, ""));
-	return isNaN(parsedValue) ? 0.0 : parsedValue;
-};
-
-export const handleInput = (value) => {
-	return numberFormat(parseFormattedNumber(value));
-};
-
-// jan 2023 rates
+// jan 2023 bracket
 export const computeWithholdingTax = (taxableAnnualIncome) => {
 	const taxBrackets = [
 		{ min: 0, max: 250000, rate: 0, base: 0 },
@@ -39,7 +27,7 @@ export const computeWithholdingTax = (taxableAnnualIncome) => {
 	return 0;
 };
 
-// jan 2025 rates
+// jan 2025 table
 const SSS_MATRIX = [
 	[0, 5249.99, 250.0, 0.0],
 	[5250, 5749.99, 275.0, 0.0],
@@ -141,7 +129,7 @@ export const computeSSS = (salary, isSelfEmployed = false) => {
 	return { sss: 0, mpf: 0 };
 };
 
-// jan 2024 rates
+// jan 2024 bracket
 export const computePhilHealth = (monthly, isSelfEmployed = false) => {
 	if (!monthly || isNaN(monthly) || monthly <= 0) {
 		return 0;
@@ -149,25 +137,22 @@ export const computePhilHealth = (monthly, isSelfEmployed = false) => {
 
 	const multiplier = isSelfEmployed ? 2 : 1;
 
-	// first bracket: 0 to 10,000
 	if (monthly <= 10000) {
-		return 500 * 0.5 * multiplier; // Employee: 250, Self-employed: 500
+		return 500 * 0.5 * multiplier;
 	}
 
-	// second bracket: 10,000.01 to 99,999.99 = 5% of monthly
 	if (monthly <= 99999.99) {
 		return monthly * 0.05 * 0.5 * multiplier;
 	}
 
-	// third bracket: 100,000 and above
 	if (monthly >= 100000) {
-		return 5000 * 0.5 * multiplier; // Employee: 2500, Self-employed: 5000
+		return 5000 * 0.5 * multiplier;
 	}
 
 	return 0;
 };
 
-// feb 2024 rates
+// feb 2024 table
 export const computePagIbig = (salary) => {
 	if (salary <= 1500) return salary * 0.01;
 	if (salary <= 10000) return salary * 0.02;

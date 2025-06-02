@@ -38,7 +38,7 @@ const LineChart = ({ deductions }) => {
 			key: "pagIbig",
 			value: deductions.pagIbig || 0,
 			color: "bg-yellow-500",
-			label: "Pag-Ibig Contribution",
+			label: "Pag-IBIG Contribution",
 			duration: "duration-700",
 		},
 	];

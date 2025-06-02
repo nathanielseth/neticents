@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { useRef, useEffect, useCallback, memo } from "react";
 import { useSalaryCalculator } from "../utils/useSalaryCalculator";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { handleInput, parseFormattedNumber } from "../utils/calculation";
+import { handleInput, parseFormattedNumber } from "../utils/format";
 
 const SECTOR_OPTIONS = [
 	{ id: "private", label: "Private" },

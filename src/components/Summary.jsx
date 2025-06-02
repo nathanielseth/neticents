@@ -6,8 +6,8 @@ import {
 	computeSSS,
 	computePhilHealth,
 	computePagIbig,
-	numberFormat,
 } from "../utils/calculation";
+import { numberFormat } from "../utils/format";
 
 const Summary = ({
 	takeHomePay,
@@ -196,7 +196,7 @@ const getLabel = (key) => {
 		gsis: "GSIS Contribution",
 		sss: "SSS Contribution",
 		philHealth: "PhilHealth Contribution",
-		pagIbig: "Pag-Ibig Contribution",
+		pagIbig: "Pag-IBIG Contribution",
 		total: "Total Deduction",
 	};
 	return labels[key];

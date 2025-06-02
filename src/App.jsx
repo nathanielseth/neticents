@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import Inputs from "./components/Inputs";
 import Summary from "./components/Summary";
 import References from "./components/References";
+// import SettingsModal from "./components/SettingsModal";
 import { useTheme } from "./utils/themeContext";
 import { HiSun, HiMoon } from "react-icons/hi";
 import { generateTaxSummaryPDF } from "./utils/pdfGenerator";
@@ -55,19 +56,22 @@ const App = () => {
 						<h2 className="text-3xl font-bold text-black dark:text-white mt-1">
 							Philippine Income Tax Calculator
 						</h2>
-						<button
-							type="button"
-							aria-label="Toggle theme"
-							className="absolute bottom-0 right-0 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition duration-100"
-							onClick={toggleTheme}
-						>
-							{theme === "dark" ? <HiSun size={20} /> : <HiMoon size={20} />}
-						</button>
+						<div className="absolute bottom-0 right-0 flex items-center">
+							{/* <SettingsModal /> */}
+							<button
+								type="button"
+								aria-label="Toggle theme"
+								className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition duration-100"
+								onClick={toggleTheme}
+							>
+								{theme === "dark" ? <HiSun size={20} /> : <HiMoon size={20} />}
+							</button>
+						</div>
 					</div>
 
 					<div className="relative mb-8">
 						<div className="absolute inset-0 flex items-center">
-							<div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+							<div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
 						</div>
 					</div>
 

@@ -1,14 +1,17 @@
 import { useState, useCallback, useEffect } from "react";
 import {
-	handleInput,
 	computeWithholdingTax,
 	computeSSS,
 	computePhilHealth,
 	computePagIbig,
 	computeGSIS,
+} from "../utils/calculation";
+
+import {
+	handleInput,
 	parseFormattedNumber,
 	numberFormat,
-} from "../utils/calculation";
+} from "../utils/format";
 
 const DE_MINIMIS_ANNUAL_LIMIT = 90000;
 const DE_MINIMIS_MONTHLY_LIMIT = DE_MINIMIS_ANNUAL_LIMIT / 12; // 7,500
