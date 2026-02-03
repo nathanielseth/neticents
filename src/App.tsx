@@ -44,7 +44,7 @@ const App = () => {
 								className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition duration-100"
 								onClick={toggleTheme}
 							>
-								{theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+								{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
 							</button>
 						</div>
 					</div>

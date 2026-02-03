@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, memo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import type { Sector, WorkSchedule, TaxInputs } from "../types";
 import type { SalaryCalculatorSetters } from "../utils/useSalaryCalculator";
 import {
@@ -15,7 +15,7 @@ interface ToggleButtonProps {
 	onClick: () => void;
 }
 
-const ToggleButton = memo(({ label, isActive, onClick }: ToggleButtonProps) => (
+const ToggleButton = ({ label, isActive, onClick }: ToggleButtonProps) => (
 	<button
 		type="button"
 		onClick={onClick}
@@ -23,7 +23,7 @@ const ToggleButton = memo(({ label, isActive, onClick }: ToggleButtonProps) => (
 	>
 		{label}
 	</button>
-));
+);
 ToggleButton.displayName = "ToggleButton";
 
 // up/down buttons
@@ -34,7 +34,7 @@ interface SpinButtonProps {
 	disabled?: boolean;
 }
 
-const SpinButton = memo(
+const SpinButton =
 	({ direction, onClick, onStop, disabled }: SpinButtonProps) => {
 		const Icon = direction === "up" ? ChevronUp : ChevronDown;
 		return (
@@ -54,8 +54,7 @@ const SpinButton = memo(
 				<Icon size={12} className="text-gray-600 dark:text-gray-400" />
 			</button>
 		);
-	},
-);
+	};
 SpinButton.displayName = "SpinButton";
 
 // InputField
@@ -72,7 +71,7 @@ interface InputFieldProps {
 	helperText?: string | null;
 }
 
-const InputField = memo(
+const InputField =
 	({
 		label,
 		value,
@@ -215,8 +214,7 @@ const InputField = memo(
 				)}
 			</div>
 		);
-	},
-);
+	};
 InputField.displayName = "InputField";
 
 // static option lists
@@ -269,7 +267,7 @@ const Inputs = ({ inputs, setters }: InputsProps) => {
 	const isSelfEmployed = inputs.sector === "selfemployed";
 
 	return (
-		<div className="p-6 rounded-lg bg-[#fbfcfd] dark:bg-gray-900 text-gray-900 dark:text-white">
+		<div className="p-3 rounded-lg bg-[#fbfcfd] dark:bg-gray-900 text-gray-900 dark:text-white">
 			<div className="space-y-3">
 				{/* Employment Type */}
 				<div>

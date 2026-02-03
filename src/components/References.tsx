@@ -71,7 +71,7 @@ const References = () => {
   }
 
   return (
-    <div className="max-w-4xl w-full px-4 mb-8">
+    <div className="max-w-4xl w-full px-2 mb-8">
       <div className="relative mb-6">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
@@ -83,7 +83,7 @@ const References = () => {
         </div>
       </div>
 
-      <div className="p-6 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+      <div className="p-5 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {referenceLinks.map((link, index) => (
             <a
