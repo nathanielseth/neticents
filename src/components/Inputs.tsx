@@ -43,8 +43,14 @@ const SpinButton =
 				onMouseDown={onClick}
 				onMouseUp={onStop}
 				onMouseLeave={onStop}
-				onTouchStart={onClick}
-				onTouchEnd={onStop}
+				onTouchStart={(e) => {
+					e.preventDefault();
+					onClick();
+				}}
+				onTouchEnd={(e) => {
+					e.preventDefault();
+					onStop();
+				}}
 				disabled={disabled}
 				className={`p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded ${
 					disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
