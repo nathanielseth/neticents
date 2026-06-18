@@ -58,6 +58,7 @@ const Summary = ({ results }: SummaryProps) => {
 						{PAY_PERIOD_OPTIONS.map((option) => (
 							<button
 								key={option.value}
+								type="button"
 								className={`px-3 py-1 rounded-full ${
 									payPeriod === option.value
 										? "bg-[#4169e1] text-white shadow-sm"

@@ -1,3 +1,4 @@
+// ph payroll tax computation. bracket data is a snapshot of published circulars (dates inline)
 import type {
 	Sector,
 	WorkSchedule,
@@ -9,9 +10,9 @@ import type {
 } from "../types";
 
 export const DE_MINIMIS_ANNUAL_LIMIT = 90_000;
-export const DE_MINIMIS_MONTHLY_LIMIT = DE_MINIMIS_ANNUAL_LIMIT / 12; // 7 500
+export const DE_MINIMIS_MONTHLY_LIMIT = DE_MINIMIS_ANNUAL_LIMIT / 12;
 
-export const WORK_SCHEDULES: Record<WorkSchedule, number> = {
+const WORK_SCHEDULES: Record<WorkSchedule, number> = {
 	"mon-fri": 22,
 	"mon-sat": 26,
 	"mon-sun": 30,
@@ -31,8 +32,8 @@ interface TaxBracket {
 	base: number;
 }
 
-// train jan 2023 bracket
-export const computeWithholdingTax = (taxableAnnualIncome: number): number => {
+// train law jan 2023 brackets
+const computeWithholdingTax = (taxableAnnualIncome: number): number => {
 	const taxBrackets: TaxBracket[] = [
 		{ min: 0, max: 250000, rate: 0, base: 0 },
 		{ min: 250001, max: 400000, rate: 0.15, base: 0 },
@@ -53,7 +54,6 @@ export const computeWithholdingTax = (taxableAnnualIncome: number): number => {
 
 			const excess = taxableAnnualIncome - bracket.min;
 
-			// base = fixed tax from lower brackets
 			const annualTax = bracket.base + excess * bracket.rate;
 			return annualTax / 12;
 		}
@@ -62,8 +62,7 @@ export const computeWithholdingTax = (taxableAnnualIncome: number): number => {
 	return 0;
 };
 
-// sss jan 2025 table
-// format: [lower, upper, sss, mpf]
+// sss contribution table, jan 2025
 type SSSMatrixRow = [number, number, number, number];
 
 const SSS_MATRIX: SSSMatrixRow[] = [
@@ -130,10 +129,7 @@ const SSS_MATRIX: SSSMatrixRow[] = [
 	[34750, Infinity, 1000.0, 750.0],
 ];
 
-export const computeSSS = (
-	salary: number,
-	isSelfEmployed = false,
-): SSSResult => {
+const computeSSS = (salary: number, isSelfEmployed = false): SSSResult => {
 	if (isNaN(salary)) {
 		return { sss: 0, mpf: 0 };
 	}
@@ -173,11 +169,8 @@ export const computeSSS = (
 	return { sss: 0, mpf: 0 };
 };
 
-// philhealth jan 2024 bracket
-export const computePhilHealth = (
-	monthly: number,
-	isSelfEmployed = false,
-): number => {
+// philhealth contribution, jan 2024 rates
+const computePhilHealth = (monthly: number, isSelfEmployed = false): number => {
 	if (!monthly || isNaN(monthly) || monthly <= 0) {
 		return 0;
 	}
@@ -200,19 +193,18 @@ export const computePhilHealth = (
 	return 0;
 };
 
-// feb 2024 table
-export const computePagIbig = (salary: number): number => {
+// pag-ibig contribution, feb 2024 table
+const computePagIbig = (salary: number): number => {
 	if (salary <= 1500) return salary * 0.01;
 	if (salary <= 10000) return salary * 0.02;
 	return 200;
 };
 
 // gsis employee contribution rate
-export const computeGSIS = (salary: number): number => {
+const computeGSIS = (salary: number): number => {
 	return salary * 0.09;
 };
 
-// ot nd
 function computePremiumPay(
 	hourlyRate: number,
 	otHours: number,
@@ -304,7 +296,6 @@ export function computeTaxSummary(inputs: TaxInputs): TaxResults {
 	const workingDays = WORK_SCHEDULES[workSchedule];
 	const hourlyRate = salary / (workingDays * HOURS_PER_DAY);
 
-	// premium pay
 	const premiumPay = computePremiumPay(
 		hourlyRate,
 		overtimeHours,
@@ -312,7 +303,6 @@ export function computeTaxSummary(inputs: TaxInputs): TaxResults {
 		sector,
 	);
 
-	// gross
 	const grossPay = salary + premiumPay.totalPremiumPay;
 
 	// de-minimis: only the excess over the monthly cap is taxable
@@ -320,7 +310,6 @@ export function computeTaxSummary(inputs: TaxInputs): TaxResults {
 	const taxableSalary = grossPay + taxableAllowance;
 	const annualIncome = taxableSalary * 12;
 
-	// mandatory contributions (computed on taxableSalary)
 	let sssContribution = 0; // employee sss + mpf shown as one line
 	let gsisContribution = 0;
 
@@ -328,7 +317,6 @@ export function computeTaxSummary(inputs: TaxInputs): TaxResults {
 		const sssResult = computeSSS(taxableSalary, isSelfEmployed);
 		sssContribution = sssResult.sss + sssResult.mpf;
 	} else {
-		// public
 		gsisContribution = computeGSIS(taxableSalary);
 	}
 
@@ -343,19 +331,17 @@ export function computeTaxSummary(inputs: TaxInputs): TaxResults {
 		philHealthContribution +
 		pagIbigContribution;
 
-	// withholding tax (contributions reduce taxable annual base)
+	// contributions reduce taxable annual base
 	const taxableAnnualIncome = annualIncome - totalContributions * 12;
 	const withholdingTax = computeWithholdingTax(taxableAnnualIncome);
 
-	// totals
 	const totalDeductions = totalContributions + withholdingTax;
 	const netPay = grossPay - totalDeductions;
 	const takeHomePay = parseFloat(Math.max(netPay + allowance, 0).toFixed(2));
 
-	// gross income for display (includes allowance)
+	// gross income includes allowance for display purposes
 	const grossIncome = salary + allowance + premiumPay.totalPremiumPay;
 
-	// eductions map
 	const deductions = {
 		withholdingTax,
 		gsis: gsisContribution,
@@ -383,8 +369,6 @@ export function computeTaxSummary(inputs: TaxInputs): TaxResults {
 		effectiveRate: grossIncome > 0 ? (visibleTotal / grossIncome) * 100 : 0,
 	};
 }
-
-// internal helper
 
 function filterDeductions(
 	deductions: Deductions,

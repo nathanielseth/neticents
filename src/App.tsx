@@ -1,27 +1,27 @@
-import { useState } from "react";
+import { useRef } from "react";
 import Inputs from "./components/Inputs";
 import Summary from "./components/Summary";
 import References from "./components/References";
-import PDFPreviewModal from "./components/PDFPreviewModal";
+import PDFPreviewModal, {
+	type PDFPreviewModalHandle,
+} from "./components/PDFPreviewModal";
 import { useTheme } from "./utils/themeContext";
 import { Sun, Moon } from "lucide-react";
 import { useSalaryCalculator } from "./utils/useSalaryCalculator";
 import { generateTaxSummaryPDF } from "./utils/pdfGenerator";
+import { useState } from "react";
 
 const App = () => {
 	const { theme, toggleTheme } = useTheme();
 	const { inputs, results, setters } = useSalaryCalculator();
-
+	const modalRef = useRef<PDFPreviewModalHandle>(null);
 	const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-	const [pdfUrl, setPdfUrl] = useState<string>("");
-	const [showPdfModal, setShowPdfModal] = useState(false);
 
 	const handleDownload = async () => {
 		setIsGeneratingPDF(true);
 		try {
 			const url = await generateTaxSummaryPDF(results);
-			setPdfUrl(url);
-			setShowPdfModal(true);
+			modalRef.current?.open(url);
 		} catch (error) {
 			console.error("Error generating PDF:", error);
 		} finally {
@@ -65,6 +65,7 @@ const App = () => {
 
 							<div className="mt-3 flex justify-center">
 								<button
+									type="button"
 									className={`w-full py-3 px-6 text-white font-medium rounded-xl shadow-lg transition-all ${
 										isGeneratingPDF
 											? "bg-gray-400 cursor-not-allowed"
@@ -105,11 +106,7 @@ const App = () => {
 				<References />
 			</div>
 
-			<PDFPreviewModal
-				isOpen={showPdfModal}
-				onClose={() => setShowPdfModal(false)}
-				pdfUrl={pdfUrl}
-			/>
+			<PDFPreviewModal ref={modalRef} />
 
 			<footer className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-4 text-center text-sm">
 				<div className="flex items-center justify-center gap-1">

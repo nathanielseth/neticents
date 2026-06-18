@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useId, useRef, useEffect, useCallback } from "react";
 import type { Sector, WorkSchedule, TaxInputs } from "../types";
 import type { SalaryCalculatorSetters } from "../utils/useSalaryCalculator";
 import {
@@ -8,7 +8,6 @@ import {
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { numberFormat, parseFormattedNumber } from "../utils/format";
 
-// toggle button
 interface ToggleButtonProps {
 	label: string;
 	isActive: boolean;
@@ -26,7 +25,6 @@ const ToggleButton = ({ label, isActive, onClick }: ToggleButtonProps) => (
 );
 ToggleButton.displayName = "ToggleButton";
 
-// up/down buttons
 interface SpinButtonProps {
 	direction: "up" | "down";
 	onClick: () => void;
@@ -34,196 +32,174 @@ interface SpinButtonProps {
 	disabled?: boolean;
 }
 
-const SpinButton =
-	({ direction, onClick, onStop, disabled }: SpinButtonProps) => {
-		const Icon = direction === "up" ? ChevronUp : ChevronDown;
-		return (
-			<button
-				type="button"
-				onMouseDown={onClick}
-				onMouseUp={onStop}
-				onMouseLeave={onStop}
-				onTouchStart={(e) => {
-					e.preventDefault();
-					onClick();
-				}}
-				onTouchEnd={(e) => {
-					e.preventDefault();
-					onStop();
-				}}
-				disabled={disabled}
-				className={`p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded ${
-					disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-				}`}
-				tabIndex={-1}
-			>
-				<Icon size={12} className="text-gray-600 dark:text-gray-400" />
-			</button>
-		);
-	};
+const SpinButton = ({
+	direction,
+	onClick,
+	onStop,
+	disabled,
+}: SpinButtonProps) => {
+	const Icon = direction === "up" ? ChevronUp : ChevronDown;
+	return (
+		<button
+			type="button"
+			onMouseDown={onClick}
+			onMouseUp={onStop}
+			onMouseLeave={onStop}
+			onTouchStart={(e) => {
+				e.preventDefault();
+				onClick();
+			}}
+			onTouchEnd={(e) => {
+				e.preventDefault();
+				onStop();
+			}}
+			disabled={disabled}
+			className={`p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded ${
+				disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+			}`}
+			tabIndex={-1}
+		>
+			<Icon size={12} className="text-gray-600 dark:text-gray-400" />
+		</button>
+	);
+};
 SpinButton.displayName = "SpinButton";
 
-// InputField
+function formatDisplayValue(value: number, useCurrencyFormat: boolean): string {
+	if (value === 0) return "";
+	return useCurrencyFormat ? numberFormat(value.toString()) : value.toString();
+}
+
 interface InputFieldProps {
 	label: string;
 	value: number;
 	onChange: (value: number) => void;
 	placeholder?: string;
 	disabled?: boolean;
-	/** when true, formats with thousand-separator commas (currency fields). */
 	useCurrencyFormat?: boolean;
-	/** how much to increment/decrement on spinbutton hold */
 	step?: number;
 	helperText?: string | null;
 }
 
-const InputField =
-	({
-		label,
-		value,
-		onChange,
-		placeholder,
-		disabled = false,
-		useCurrencyFormat = false,
-		step = 1,
-		helperText = null,
-	}: InputFieldProps) => {
-		// local display string owned by this component, formatted for the user
-		const [displayValue, setDisplayValue] = useState(() =>
-			value > 0
-				? useCurrencyFormat
-					? numberFormat(value.toString())
-					: value.toString()
-				: "",
-		);
+const InputField = ({
+	label,
+	value,
+	onChange,
+	placeholder,
+	disabled = false,
+	useCurrencyFormat = false,
+	step = 1,
+	helperText = null,
+}: InputFieldProps) => {
+	const inputId = useId();
 
-		const [prevValue, setPrevValue] = useState(value);
+	// value from parent is the only source of truth; the display string is
+	// derived inline rather than mirrored into its own state
+	const displayValue = formatDisplayValue(value, useCurrencyFormat);
 
-		if (value !== prevValue) {
-			setPrevValue(value);
+	const handleChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const raw = e.target.value;
 
-			const next =
-				value === 0
-					? ""
-					: useCurrencyFormat
-						? numberFormat(value.toString())
-						: value.toString();
+			// cap input length to prevent huge numbers
+			if (raw.length > (useCurrencyFormat ? 15 : 3)) return;
 
-			if (next !== displayValue) {
-				setDisplayValue(next);
+			if (useCurrencyFormat) {
+				onChange(parseFormattedNumber(raw));
+			} else {
+				const cleaned = raw.replace(/[^0-9]/g, "");
+				onChange(cleaned === "" ? 0 : parseInt(cleaned, 10));
 			}
+		},
+		[useCurrencyFormat, onChange],
+	);
+
+	// hold-to-repeat for spin buttons
+	const intervalRef = useRef<number | null>(null);
+	const timeoutRef = useRef<number | null>(null);
+
+	const stop = useCallback(() => {
+		if (timeoutRef.current) {
+			clearTimeout(timeoutRef.current);
+			timeoutRef.current = null;
 		}
+		if (intervalRef.current) {
+			clearInterval(intervalRef.current);
+			intervalRef.current = null;
+		}
+	}, []);
 
-		// text input handler
-		const handleChange = useCallback(
-			(e: React.ChangeEvent<HTMLInputElement>) => {
-				const raw = e.target.value;
+	useEffect(() => stop, [stop]);
 
-				// max length to prevent huge input
-				if (raw.length > (useCurrencyFormat ? 15 : 3)) return;
+	const applyStep = useCallback(
+		(direction: 1 | -1) => {
+			if (disabled) return;
+			onChange(Math.max(0, value + step * direction));
+		},
+		[disabled, value, step, onChange],
+	);
 
-				if (useCurrencyFormat) {
-					const formatted = numberFormat(parseFormattedNumber(raw).toString());
-					setDisplayValue(formatted);
-					onChange(parseFormattedNumber(formatted));
-				} else {
-					// allow only digits
-					const cleaned = raw.replace(/[^0-9]/g, "");
-					setDisplayValue(cleaned);
-					onChange(cleaned === "" ? 0 : parseInt(cleaned, 10));
-				}
-			},
-			[useCurrencyFormat, onChange],
-		);
+	// use a ref so the interval always calls the latest applyStep
+	const applyStepRef = useRef(applyStep);
+	useEffect(() => {
+		applyStepRef.current = applyStep;
+	}, [applyStep]);
 
-		//  press-and-hold repeat for up/down buttons
-		const intervalRef = useRef<number | null>(null);
-		const timeoutRef = useRef<number | null>(null);
-
-		const stop = useCallback(() => {
-			if (timeoutRef.current) {
-				clearTimeout(timeoutRef.current);
-				timeoutRef.current = null;
-			}
-			if (intervalRef.current) {
-				clearInterval(intervalRef.current);
-				intervalRef.current = null;
-			}
-		}, []);
-
-		useEffect(() => stop, [stop]); // cleanup on unmount
-
-		const applyStep = useCallback(
-			(direction: 1 | -1) => {
-				if (disabled) return;
-				const next = Math.max(0, value + step * direction);
-				onChange(next);
-				setDisplayValue(
-					useCurrencyFormat ? numberFormat(next.toString()) : next.toString(),
+	const startRepeat = useCallback(
+		(direction: 1 | -1) => {
+			// immediate first tick on press
+			applyStepRef.current(direction);
+			stop();
+			timeoutRef.current = setTimeout(() => {
+				intervalRef.current = setInterval(
+					() => applyStepRef.current(direction),
+					100,
 				);
-			},
-			[disabled, value, step, onChange, useCurrencyFormat],
-		);
+			}, 400);
+		},
+		[stop],
+	);
 
-		// use a ref so the interval always calls the latest applyStep
-		const applyStepRef = useRef(applyStep);
-		useEffect(() => {
-			applyStepRef.current = applyStep;
-		}, [applyStep]);
-
-		const startRepeat = useCallback(
-			(direction: 1 | -1) => {
-				applyStepRef.current(direction); // immediate first tick
-				stop();
-				timeoutRef.current = setTimeout(() => {
-					intervalRef.current = setInterval(
-						() => applyStepRef.current(direction),
-						100,
-					);
-				}, 400);
-			},
-			[stop],
-		);
-
-		return (
-			<div>
-				<label className="label">{label}</label>
-				<div className="relative input-wrapper">
-					<input
-						type="text"
-						inputMode={useCurrencyFormat ? "decimal" : "numeric"}
-						className={`input-field rounded-l pr-8 ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
-						placeholder={placeholder}
-						value={displayValue}
-						onChange={handleChange}
+	return (
+		<div>
+			<label className="label" htmlFor={inputId}>
+				{label}
+			</label>
+			<div className="relative input-wrapper">
+				<input
+					id={inputId}
+					type="text"
+					inputMode={useCurrencyFormat ? "decimal" : "numeric"}
+					className={`input-field rounded-l pr-8 ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+					placeholder={placeholder}
+					value={displayValue}
+					onChange={handleChange}
+					disabled={disabled}
+				/>
+				<div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex flex-col">
+					<SpinButton
+						direction="up"
+						onClick={() => startRepeat(1)}
+						onStop={stop}
 						disabled={disabled}
 					/>
-					<div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex flex-col">
-						<SpinButton
-							direction="up"
-							onClick={() => startRepeat(1)}
-							onStop={stop}
-							disabled={disabled}
-						/>
-						<SpinButton
-							direction="down"
-							onClick={() => startRepeat(-1)}
-							onStop={stop}
-							disabled={disabled}
-						/>
-					</div>
+					<SpinButton
+						direction="down"
+						onClick={() => startRepeat(-1)}
+						onStop={stop}
+						disabled={disabled}
+					/>
 				</div>
-				{helperText && (
-					<div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-						{helperText}
-					</div>
-				)}
 			</div>
-		);
-	};
+			{helperText && (
+				<div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+					{helperText}
+				</div>
+			)}
+		</div>
+	);
+};
 InputField.displayName = "InputField";
-
-// static option lists
 
 const SECTOR_OPTIONS: { id: Sector; label: string }[] = [
 	{ id: "private", label: "Private" },
@@ -237,7 +213,6 @@ const WORK_SCHEDULE_OPTIONS: { id: WorkSchedule; label: string }[] = [
 	{ id: "mon-sun", label: "Mon-Sun" },
 ];
 
-// helper-text derivations ui
 function getDeMinimisHelperText(salary: number, allowance: number): string {
 	if (allowance > 0 && salary <= 0) {
 		return "Enter basic pay to calculate de minimis benefits";
@@ -263,7 +238,6 @@ function getNightDifferentialHelperText(sector: Sector): string {
 	return "";
 }
 
-// Inputs component
 interface InputsProps {
 	inputs: TaxInputs;
 	setters: SalaryCalculatorSetters;
@@ -277,7 +251,7 @@ const Inputs = ({ inputs, setters }: InputsProps) => {
 			<div className="space-y-3">
 				{/* Employment Type */}
 				<div>
-					<label className="label">Employment Type</label>
+					<span className="label">Employment Type</span>
 					<div className="flex mt-2 space-x-2 flex-wrap gap-y-2">
 						{SECTOR_OPTIONS.map((option) => (
 							<ToggleButton
@@ -331,7 +305,7 @@ const Inputs = ({ inputs, setters }: InputsProps) => {
 				</div>
 
 				<div>
-					<label className="label">Work Schedule</label>
+					<span className="label">Work Schedule</span>
 					<div className="flex mt-2 space-x-2 flex-wrap gap-y-2">
 						{WORK_SCHEDULE_OPTIONS.map((option) => (
 							<ToggleButton
