@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import type { Sector, TaxResults } from "../types";
+import { DEDUCTION_META, type DeductionKey } from "./deductionMeta";
 
 const SECTOR_NAMES: Record<Sector, string> = {
 	private: "Private Employee",
@@ -7,13 +8,9 @@ const SECTOR_NAMES: Record<Sector, string> = {
 	selfemployed: "Self-Employed",
 };
 
-const DEDUCTION_LABELS: Record<string, string> = {
-	withholdingTax: "Withholding Tax",
-	gsis: "GSIS Contribution",
-	sss: "SSS Contribution",
-	philHealth: "PhilHealth Contribution",
-	pagIbig: "Pag-IBIG Contribution",
-};
+function deductionLabel(key: string): string {
+	return DEDUCTION_META[key as DeductionKey]?.label ?? key;
+}
 
 function formatCurrency(value: number): string {
 	return `P${value.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -135,7 +132,7 @@ export const generateTaxSummaryPDF = async (
 	pdf.setTextColor(40, 40, 40);
 
 	visibleDeductions.forEach(([key, value]) => {
-		row(pdf, y, pageWidth, DEDUCTION_LABELS[key] || key, formatCurrency(value));
+		row(pdf, y, pageWidth, deductionLabel(key), formatCurrency(value));
 		y += 6;
 	});
 

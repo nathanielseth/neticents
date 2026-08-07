@@ -75,16 +75,16 @@ const References = () => {
 		<div className="max-w-4xl w-full px-2 mb-8">
 			<div className="relative mb-6">
 				<div className="absolute inset-0 flex items-center">
-					<div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
+					<div className="w-full border-t border-neutral-200 dark:border-neutral-800"></div>
 				</div>
 				<div className="relative flex justify-left">
-					<span className="px-4 text-sm font-medium bg-[#fbfcfd] dark:bg-gray-900 text-gray-500 dark:text-gray-400">
+					<span className="px-4 text-sm font-medium bg-neutral-50 dark:bg-neutral-900 text-neutral-500 dark:text-neutral-400">
 						References
 					</span>
 				</div>
 			</div>
 
-			<div className="p-5 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+			<div className="card p-5">
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
 					{REFERENCE_LINKS.map((link) => (
 						<a
@@ -92,10 +92,10 @@ const References = () => {
 							href={link.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							className={`block p-3 rounded-lg border bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 ${HOVER_CLASSES_BY_CATEGORY[link.category]}`}
+							className={`block min-w-0 p-3 rounded-lg border bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 ${HOVER_CLASSES_BY_CATEGORY[link.category]}`}
 						>
 							<div className="font-medium text-sm mb-1">{link.title}</div>
-							<div className="text-xs text-gray-600 dark:text-gray-400">
+							<div className="text-xs text-neutral-500 dark:text-neutral-400">
 								{link.subtitle}
 							</div>
 						</a>

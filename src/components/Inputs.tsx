@@ -54,12 +54,12 @@ const SpinButton = ({
 				onStop();
 			}}
 			disabled={disabled}
-			className={`p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded ${
+			className={`p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded ${
 				disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
 			}`}
 			tabIndex={-1}
 		>
-			<Icon size={12} className="text-gray-600 dark:text-gray-400" />
+			<Icon size={12} className="text-neutral-500 dark:text-neutral-400" />
 		</button>
 	);
 };
@@ -161,7 +161,7 @@ const InputField = ({
 	);
 
 	return (
-		<div>
+		<div className="min-w-0">
 			<label className="label" htmlFor={inputId}>
 				{label}
 			</label>
@@ -192,7 +192,7 @@ const InputField = ({
 				</div>
 			</div>
 			{helperText && (
-				<div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+				<div className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
 					{helperText}
 				</div>
 			)}
@@ -247,7 +247,7 @@ const Inputs = ({ inputs, setters }: InputsProps) => {
 	const isSelfEmployed = inputs.sector === "selfemployed";
 
 	return (
-		<div className="p-3 rounded-lg bg-[#fbfcfd] dark:bg-gray-900 text-gray-900 dark:text-white">
+		<div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-white">
 			<div className="space-y-3">
 				{/* Employment Type */}
 				<div>
@@ -319,10 +319,12 @@ const Inputs = ({ inputs, setters }: InputsProps) => {
 				</div>
 			</div>
 
-			<div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
-				<strong>Note:</strong> This calculator is intended for estimation
-				purposes only, it does not account for holidays or other unique
-				circumstances.
+			<div className="mt-6 text-sm text-neutral-500 dark:text-neutral-400">
+				<strong className="text-neutral-600 dark:text-neutral-300">
+					Note:
+				</strong>{" "}
+				This calculator is intended for estimation purposes only, it does not
+				account for holidays or other unique circumstances.
 			</div>
 		</div>
 	);

@@ -1,112 +1,107 @@
-import type { Deductions } from '../types'
+import type { Deductions } from "../types";
+import { DEDUCTION_META, type DeductionKey } from "../utils/deductionMeta";
 
 interface LineChartProps {
-  deductions: Deductions
+	deductions: Deductions;
+	highlightedKey?: DeductionKey | null;
 }
 
 interface Segment {
-  key: string
-  value: number
-  color: string
-  label: string
-  duration: string
+	key: DeductionKey;
+	value: number;
+	label: string;
 }
 
-const LineChart = ({ deductions }: LineChartProps) => {
-  const hasAnyDeductions = deductions.total > 0
+const LineChart = ({ deductions, highlightedKey = null }: LineChartProps) => {
+	const hasAnyDeductions = deductions.total > 0;
 
-  const getWidthPercentage = (amount: number): number => {
-    if (!hasAnyDeductions) return 0
-    return (amount / deductions.total) * 100
-  }
+	const getWidthPercentage = (amount: number): number => {
+		if (!hasAnyDeductions) return 0;
+		return (amount / deductions.total) * 100;
+	};
 
-  const governmentContribution = (deductions.gsis || 0) + (deductions.sss || 0)
-  const governmentLabel =
-    deductions.gsis > 0 ? 'GSIS Contribution' : 'SSS Contribution'
+	const governmentKey: DeductionKey = deductions.gsis > 0 ? "gsis" : "sss";
+	const governmentContribution = (deductions.gsis || 0) + (deductions.sss || 0);
 
-  const segments: Segment[] = [
-    {
-      key: 'withholdingTax',
-      value: deductions.withholdingTax || 0,
-      color: 'bg-red-500',
-      label: 'Withholding Tax',
-      duration: 'duration-500',
-    },
-    {
-      key: 'government',
-      value: governmentContribution,
-      color: 'bg-green-500',
-      label: governmentLabel,
-      duration: 'duration-700',
-    },
-    {
-      key: 'philHealth',
-      value: deductions.philHealth || 0,
-      color: 'bg-purple-500',
-      label: 'PhilHealth Contribution',
-      duration: 'duration-700',
-    },
-    {
-      key: 'pagIbig',
-      value: deductions.pagIbig || 0,
-      color: 'bg-yellow-500',
-      label: 'Pag-IBIG Contribution',
-      duration: 'duration-700',
-    },
-  ]
+	const segments: Segment[] = [
+		{
+			key: "withholdingTax",
+			value: deductions.withholdingTax || 0,
+			label: DEDUCTION_META.withholdingTax.label,
+		},
+		{
+			key: governmentKey,
+			value: governmentContribution,
+			label: DEDUCTION_META[governmentKey].label,
+		},
+		{
+			key: "philHealth",
+			value: deductions.philHealth || 0,
+			label: DEDUCTION_META.philHealth.label,
+		},
+		{
+			key: "pagIbig",
+			value: deductions.pagIbig || 0,
+			label: DEDUCTION_META.pagIbig.label,
+		},
+	];
 
-  const visibleSegments = segments.filter((segment) => segment.value > 0)
-  const firstVisibleKey = visibleSegments[0]?.key
-  const lastVisibleKey = visibleSegments[visibleSegments.length - 1]?.key
+	const visibleSegments = segments.filter((segment) => segment.value > 0);
+	const firstVisibleKey = visibleSegments[0]?.key;
+	const lastVisibleKey = visibleSegments[visibleSegments.length - 1]?.key;
 
-  const showEqualSegments = !hasAnyDeductions
+	const showEqualSegments = !hasAnyDeductions;
 
-  return (
-    <div className="relative mt-7 w-full h-2 bg-gray-300 rounded-full overflow-hidden">
-      <div className="flex h-full w-full">
-        {segments.map((segment, index) => {
-          let width = showEqualSegments
-            ? 100 / segments.length
-            : getWidthPercentage(segment.value)
+	return (
+		<div className="relative mt-7 w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+			<div className="flex h-full w-full">
+				{segments.map((segment, index) => {
+					let width = showEqualSegments
+						? 100 / segments.length
+						: getWidthPercentage(segment.value);
 
-          const isLastVisible = showEqualSegments
-            ? index === segments.length - 1
-            : segment.key === lastVisibleKey
+					const isLastVisible = showEqualSegments
+						? index === segments.length - 1
+						: segment.key === lastVisibleKey;
 
-          if (isLastVisible && !showEqualSegments) {
-            const previousWidth = segments
-              .slice(0, index)
-              .reduce((acc, seg) => acc + getWidthPercentage(seg.value), 0)
-            width = Math.max(width, 200.0 - previousWidth)
-          }
+					if (isLastVisible && !showEqualSegments) {
+						const previousWidth = segments
+							.slice(0, index)
+							.reduce((acc, seg) => acc + getWidthPercentage(seg.value), 0);
+						width = Math.max(width, 100 - previousWidth);
+					}
 
-          const isFirst = showEqualSegments
-            ? index === 0
-            : segment.key === firstVisibleKey
-          const isLast = showEqualSegments
-            ? index === segments.length - 1
-            : segment.key === lastVisibleKey
+					const isFirst = showEqualSegments
+						? index === 0
+						: segment.key === firstVisibleKey;
+					const isLast = showEqualSegments
+						? index === segments.length - 1
+						: segment.key === lastVisibleKey;
+					
+					const matchesHighlight =
+						highlightedKey === segment.key ||
+						(segment.key === governmentKey &&
+							(highlightedKey === "gsis" || highlightedKey === "sss"));
+					const isDimmed = highlightedKey !== null && !matchesHighlight;
 
-          return (
-            <div
-              key={segment.key}
-              className={`
-                h-full transition-all ease-out shrink-0
-                ${segment.color} 
-                ${segment.duration}
-                ${isFirst ? 'rounded-l-full' : ''}
-                ${isLast ? 'rounded-r-full' : ''}
+					return (
+						<div
+							key={segment.key}
+							className={`
+                h-full transition-[width,opacity] duration-300 ease-out shrink-0
+                ${DEDUCTION_META[segment.key].colorClass}
+                ${isDimmed ? "opacity-30" : "opacity-100"}
+                ${isFirst ? "rounded-l-full" : ""}
+                ${isLast ? "rounded-r-full" : ""}
               `}
-              style={{
-                width: `${width}%`,
-              }}
-              title={width > 0 ? `${segment.label} (${width.toFixed(2)}%)` : ''}
-            />
-          )
-        })}
-      </div>
-    </div>
-  )
-}
+							style={{ width: `${width}%` }}
+							title={width > 0 ? `${segment.label} (${width.toFixed(2)}%)` : ""}
+						/>
+					);
+				})}
+			</div>
+		</div>
+	);
+};
 
-export default LineChart
+export default LineChart;
