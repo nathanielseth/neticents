@@ -30,6 +30,11 @@ const LineChart = ({ deductions, highlightedKey = null }: LineChartProps) => {
 			label: DEDUCTION_META.withholdingTax.label,
 		},
 		{
+			key: "percentageTax",
+			value: deductions.percentageTax || 0,
+			label: DEDUCTION_META.percentageTax.label,
+		},
+		{
 			key: governmentKey,
 			value: governmentContribution,
 			label: DEDUCTION_META[governmentKey].label,
@@ -104,4 +109,4 @@ const LineChart = ({ deductions, highlightedKey = null }: LineChartProps) => {
 	);
 };
 
-export default LineChart;
+export default LineChart;

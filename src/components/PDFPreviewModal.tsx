@@ -46,7 +46,7 @@ const PDFPreviewModal = ({ ref }: PDFPreviewModalProps) => {
 			ref={dialogRef}
 			onCancel={handleCancel}
 			aria-label="Tax Summary Preview"
-			className="backdrop:bg-black/50 backdrop:backdrop-blur-sm m-auto w-full max-w-4xl h-[90vh] p-0 bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl border-0"
+			className="m-auto h-[90dvh] w-[calc(100%-2rem)] max-w-4xl rounded-2xl border-0 bg-surface p-0 text-fg shadow-2xl backdrop:bg-black/50"
 		>
 			<div
 				role="presentation"
@@ -55,22 +55,20 @@ const PDFPreviewModal = ({ ref }: PDFPreviewModalProps) => {
 					if (e.target === e.currentTarget) closeDialog();
 				}}
 			>
-				{/* Header */}
-				<div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700">
-					<h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+				<div className="flex items-center justify-between border-b border-line p-4">
+					<h3 className="text-lg font-semibold">
 						Tax Summary Preview
 					</h3>
 					<button
 						type="button"
 						onClick={closeDialog}
 						aria-label="Close preview"
-						className="p-2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
+						className="grid size-9 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-fg"
 					>
-						<X size={20} />
+						<X aria-hidden className="size-5" />
 					</button>
 				</div>
 
-				{/* PDF iframe */}
 				<div className="flex-1 overflow-hidden relative">
 					{pdfUrl && (
 						<iframe
@@ -84,9 +82,9 @@ const PDFPreviewModal = ({ ref }: PDFPreviewModalProps) => {
 					<button
 						type="button"
 						onClick={handleDownload}
-						className="absolute bottom-6 right-6 flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-brand hover:bg-brand-hover rounded-lg shadow-lg"
+						className="absolute right-6 bottom-6 flex h-10 items-center gap-2 rounded-lg bg-brand px-5 text-sm font-medium text-white shadow-lg hover:bg-brand-hover"
 					>
-						<Download size={18} />
+						<Download aria-hidden className="size-4.5" />
 						Download PDF
 					</button>
 				</div>

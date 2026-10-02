@@ -1,6 +1,22 @@
-import { useState, useMemo } from "react";
-import type { Sector, WorkSchedule, TaxInputs, TaxResults } from "../types";
-import { computeTaxSummary } from "./calculation";
+import { useState, useMemo, useEffect } from "react";
+import type {
+	Sector,
+	WorkSchedule,
+	NightDiffRate,
+	PremiumDayType,
+	PremiumDayHours,
+	TaxInputs,
+	TaxRegime,
+	TaxResults,
+} from "../types";
+import { computeTaxSummary, defaultNightDiffRate } from "./calculation";
+import {
+	createDefaultInputs,
+	emptyPremiumWork,
+	loadInputs,
+	saveInputs,
+} from "./savedInputs";
+import { limitInputs } from "./inputLimits";
 
 export interface SalaryCalculatorSetters {
 	setSalary: (value: number) => void;
@@ -8,7 +24,16 @@ export interface SalaryCalculatorSetters {
 	setSector: (sector: Sector) => void;
 	setOvertimeHours: (value: number) => void;
 	setNightDifferentialHours: (value: number) => void;
+	setNightDifferentialRate: (rate: NightDiffRate) => void;
 	setWorkSchedule: (schedule: WorkSchedule) => void;
+	setPremiumWork: (
+		type: PremiumDayType,
+		field: keyof PremiumDayHours,
+		value: number,
+	) => void;
+	setIncludeThirteenthMonth: (include: boolean) => void;
+	setTaxRegime: (regime: TaxRegime) => void;
+	reset: () => void;
 }
 
 export interface UseSalaryCalculatorReturn {
@@ -17,61 +42,61 @@ export interface UseSalaryCalculatorReturn {
 	setters: SalaryCalculatorSetters;
 }
 
-// hook
 export const useSalaryCalculator = (): UseSalaryCalculatorReturn => {
-	const [salary, setSalary] = useState(0);
-	const [allowance, setAllowance] = useState(0);
-	const [sector, setSectorState] = useState<Sector>("private");
-	const [overtimeHours, setOvertimeHoursState] = useState(0);
-	const [nightDifferentialHours, setNightDifferentialHoursState] = useState(0);
-	const [workSchedule, setWorkScheduleState] =
-		useState<WorkSchedule>("mon-fri");
-
-	const results = useMemo(
-		() =>
-			computeTaxSummary({
-				salary,
-				allowance,
-				sector,
-				overtimeHours,
-				nightDifferentialHours,
-				workSchedule,
-			}),
-		[
-			salary,
-			allowance,
-			sector,
-			overtimeHours,
-			nightDifferentialHours,
-			workSchedule,
-		],
+	const [inputs, setInputs] = useState<TaxInputs>(() =>
+		limitInputs(loadInputs()),
 	);
 
-	const inputs: TaxInputs = {
-		salary,
-		allowance,
-		sector,
-		overtimeHours,
-		nightDifferentialHours,
-		workSchedule,
-	};
+	useEffect(() => {
+		saveInputs(inputs);
+	}, [inputs]);
 
-	// this resets ot + nd when switching to self-employed
-	const setSector = (next: Sector) => {
-		setSectorState(next);
-		if (next === "selfemployed") {
-			setOvertimeHoursState(0);
-			setNightDifferentialHoursState(0);
-		}
-	};
+	const results = useMemo(() => computeTaxSummary(inputs), [inputs]);
+
+	const patch = (changes: Partial<TaxInputs>) =>
+		setInputs((current) => limitInputs({ ...current, ...changes }));
+
+	const setSector = (next: Sector) =>
+		setInputs((current) =>
+			limitInputs({
+				...current,
+				sector: next,
+				nightDifferentialRate: defaultNightDiffRate(next), // 10% private, 20% government
+				...(next === "selfemployed"
+					? {
+							allowance: 0,
+							overtimeHours: 0,
+							nightDifferentialHours: 0,
+							premiumWork: emptyPremiumWork(),
+						}
+					: {}),
+			}),
+		);
 
 	const setters: SalaryCalculatorSetters = {
-		setSalary,
-		setAllowance,
+		setSalary: (salary) => patch({ salary }),
+		setAllowance: (allowance) => patch({ allowance }),
 		setSector,
-		setOvertimeHours: setOvertimeHoursState,
-		setNightDifferentialHours: setNightDifferentialHoursState,
-		setWorkSchedule: setWorkScheduleState,
+		setOvertimeHours: (overtimeHours) => patch({ overtimeHours }),
+		setNightDifferentialHours: (nightDifferentialHours) =>
+			patch({ nightDifferentialHours }),
+		setNightDifferentialRate: (nightDifferentialRate) =>
+			patch({ nightDifferentialRate }),
+		setWorkSchedule: (workSchedule) => patch({ workSchedule }),
+		setPremiumWork: (type, field, value) =>
+			setInputs((current) =>
+				limitInputs({
+					...current,
+					premiumWork: {
+						...current.premiumWork,
+						[type]: { ...current.premiumWork[type], [field]: value },
+					},
+				}),
+			),
+		setIncludeThirteenthMonth: (includeThirteenthMonth) =>
+			patch({ includeThirteenthMonth }),
+		setTaxRegime: (taxRegime) => patch({ taxRegime }),
+		reset: () => setInputs(createDefaultInputs()),
 	};
 
 	return { inputs, results, setters };

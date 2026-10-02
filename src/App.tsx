@@ -6,7 +6,7 @@ import PDFPreviewModal, {
 	type PDFPreviewModalHandle,
 } from "./components/PDFPreviewModal";
 import { useTheme } from "./utils/themeContext";
-import { Sun, Moon, Download } from "lucide-react";
+import { Sun, Moon, Download, LoaderCircle } from "lucide-react";
 import { useSalaryCalculator } from "./utils/useSalaryCalculator";
 import { generateTaxSummaryPDF } from "./utils/pdfGenerator";
 
@@ -15,98 +15,93 @@ const App = () => {
 	const { inputs, results, setters } = useSalaryCalculator();
 	const modalRef = useRef<PDFPreviewModalHandle>(null);
 	const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+	const [pdfFailed, setPdfFailed] = useState(false);
 
 	const handleDownload = async () => {
 		setIsGeneratingPDF(true);
+		setPdfFailed(false);
 		try {
 			const url = await generateTaxSummaryPDF(results);
 			modalRef.current?.open(url);
 		} catch (error) {
 			console.error("Error generating PDF:", error);
+			setPdfFailed(true);
 		} finally {
 			setIsGeneratingPDF(false);
 		}
 	};
 
 	return (
-		<div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-white flex flex-col relative">
-			<div className="grow flex flex-col items-center justify-center p-4 mt-2 mb-1 md:mt-8 md:mb-0">
-				<div className="max-w-4xl w-full mb-8">
-					<div className="flex items-center justify-between mb-4">
-						<h1 className="text-2xl md:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-							Philippine Income Tax Calculator
-						</h1>
+		<div className="flex min-h-dvh flex-col bg-page text-fg">
+			<div className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 md:py-12">
+				<header className="mb-8 flex items-start justify-between gap-4 border-b border-line pb-6 md:mb-10">
+					<h1 className="text-2xl font-semibold tracking-tight text-balance md:text-3xl">
+						Philippine Income Tax Calculator
+					</h1>
+					<button
+						type="button"
+						aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+						className="grid size-9 shrink-0 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-fg"
+						onClick={toggleTheme}
+					>
+						{theme === "dark" ? (
+							<Sun aria-hidden className="size-4.5" />
+						) : (
+							<Moon aria-hidden className="size-4.5" />
+						)}
+					</button>
+				</header>
+
+				<main className="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_22rem] md:gap-10 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-12">
+					<Inputs inputs={inputs} setters={setters} />
+
+					<div className="space-y-3 md:sticky md:top-8">
+						<Summary results={results} />
+
 						<button
 							type="button"
-							aria-label="Toggle theme"
-							className="p-1.5 shrink-0 text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
-							onClick={toggleTheme}
+							className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand font-medium text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
+							onClick={handleDownload}
+							disabled={isGeneratingPDF}
 						>
-							{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
+							{isGeneratingPDF ? (
+								<LoaderCircle
+									aria-hidden
+									className="size-4 animate-spin motion-reduce:animate-none"
+								/>
+							) : (
+								<Download aria-hidden className="size-4" />
+							)}
+							{isGeneratingPDF ? "Generating PDF" : "Generate PDF"}
 						</button>
+
+						{pdfFailed && (
+							<p role="alert" className="text-center text-xs text-warn">
+								The PDF could not be generated. Try again.
+							</p>
+						)}
+
+						<p className="text-center text-xs text-muted">
+							This calculator is intended for estimation purposes only.
+						</p>
 					</div>
-
-					<div className="relative mb-8">
-						<div className="absolute inset-0 flex items-center">
-							<div className="w-full border-t border-neutral-200 dark:border-neutral-800"></div>
-						</div>
-					</div>
-
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-						<div className="min-w-0">
-							<Inputs inputs={inputs} setters={setters} />
-						</div>
-
-						<div className="min-w-0 p-2 flex flex-col justify-center">
-							<Summary results={results} />
-
-							<div className="mt-3 flex justify-center">
-								<button
-									type="button"
-									className={`w-full py-3 px-6 text-white font-medium rounded-xl ${
-										isGeneratingPDF
-											? "bg-neutral-400 cursor-not-allowed"
-											: "bg-brand hover:bg-brand-hover"
-									}`}
-									onClick={handleDownload}
-									disabled={isGeneratingPDF}
-								>
-									{isGeneratingPDF ? (
-										<span className="flex items-center justify-center gap-2">
-											<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-											Generating PDF...
-										</span>
-									) : (
-										<span className="flex items-center justify-center gap-2">
-											<Download size={16} />
-											Generate PDF
-										</span>
-									)}
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
+				</main>
 
 				<References />
 			</div>
 
 			<PDFPreviewModal ref={modalRef} />
 
-			<footer className="w-full bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm p-4 text-center text-sm">
-				<div className="flex items-center justify-center gap-1">
-					<span className="text-neutral-400 dark:text-neutral-500">
-						Developed by{" "}
-					</span>
-					<a
-						href="https://nathanielseth.github.io/portfolio/"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="font-medium text-brand hover:text-brand-hover"
-					>
-						nathanielseth.dev
-					</a>
-				</div>
+			<footer className="py-6 text-center text-sm text-muted">
+				Developed by{" "}
+				<a
+					href="https://nathanielseth.github.io/portfolio/"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="font-medium text-accent hover:underline"
+				>
+					nathanielseth.dev
+				</a>
 			</footer>
 		</div>
 	);

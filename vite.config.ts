@@ -11,6 +11,9 @@ export default defineConfig({
 		VitePWA({
 			registerType: "autoUpdate",
 			includeAssets: ["favicon.ico"],
+			workbox: {
+				globPatterns: ["**/*.{js,css,html}", "**/inter-latin-*.woff2"],
+			},
 			manifest: {
 				name: "Neticents - PH Tax Calculator",
 				short_name: "Neticents",

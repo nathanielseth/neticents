@@ -1,109 +1,94 @@
 import type { ReferenceLink } from "../types";
 
-// static across all renders, so it lives at module scope rather than being rebuilt
 const REFERENCE_LINKS: ReferenceLink[] = [
 	{
 		title: "Circular No. 2024-006",
 		subtitle: "SSS Contributions 2025",
 		url: "https://www.sss.gov.ph/wp-content/uploads/2024/12/Cir-2024-006-Employers-scaled.jpg",
-		category: "sss",
 	},
 	{
 		title: "Circular No. 2019-0009",
 		subtitle: "PhilHealth Contribution Table",
 		url: "https://www.philhealth.gov.ph/partners/employers/ContributionTable_v2.pdf",
-		category: "philhealth",
 	},
 	{
 		title: "Circular No. 460",
 		subtitle: "Pag-IBIG Contribution",
-		url: "https://www.philhealth.gov.ph/circulars/2019/circ2019-0009.pdf",
-		category: "pagibig",
+		url: "https://www.pagibigfund.gov.ph/document/pdf/circulars/provident/Circular%20No.%20460%20-%20Guidelines%20on%20the%20Pag-IBIG%20Fund's%20Implementation%20of%20Increase%20in%20the%20MFS%20Effective%20February%202024.pdf",
 	},
 	{
 		title: "RA 8291 - Section 11",
 		subtitle: "GSIS Contributions",
 		url: "https://www.gsis.gov.ph/about-us/gsis-laws/republic-act-no-8291/",
-		category: "gsis",
 	},
 	{
 		title: "BIR Withholding Tax",
 		subtitle: "Tax Tables & Guidelines",
 		url: "https://www.bir.gov.ph/WithHoldingTax",
-		category: "tax",
 	},
 	{
 		title: "RA 10963",
 		subtitle: "TRAIN Law",
 		url: "https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/2/80559",
-		category: "tax",
+	},
+	{
+		title: "BIR RR No. 29-2025",
+		subtitle: "De Minimis Ceilings 2026",
+		url: "https://www.grantthornton.com.ph/insights/articles-and-updates1/tax-notes/updated-de-minimis-benefits-threshold/",
+	},
+	{
+		title: "RA 11701",
+		subtitle: "Government Night Differential",
+		url: "https://www.csc.gov.ph/phocadownload/userupload/hrpso/issuances/RA11701/IRR%20RA%2011701.pdf",
+	},
+	{
+		title: "DOLE Statutory Benefits Handbook",
+		subtitle: "Overtime, Night Differential, Rate Factors",
+		url: "https://bwc.dole.gov.ph/wp-content/uploads/2024/10/Workers-Statutory-Monetary-Benefits-Handbook-2024-Edition.pdf",
 	},
 	{
 		title: "Article on Overtime Pay",
 		subtitle: "Overtime Pay Guidelines",
 		url: "https://laborlaw.ph/overtime-pay/",
-		category: "other",
 	},
 	{
 		title: "Article on Night Differential",
 		subtitle: "Night Shift Differential Pay",
 		url: "https://laborlaw.ph/night-shift-differential-pay/",
-		category: "other",
 	},
 	{
 		title: "Article on De Minimis Benefits",
 		subtitle: "Guidelines on Allowance",
 		url: "https://www.eezi.com/de-minimis-benefits-philippines/",
-		category: "other",
 	},
 ];
 
-const HOVER_CLASSES_BY_CATEGORY: Record<ReferenceLink["category"], string> = {
-	sss: "hover:bg-green-50 dark:hover:bg-green-400/15 hover:text-green-700 dark:hover:text-green-400",
-	gsis: "hover:bg-green-50 dark:hover:bg-green-400/15 hover:text-green-700 dark:hover:text-green-400",
-	philhealth:
-		"hover:bg-purple-50 dark:hover:bg-purple-400/15 hover:text-purple-700 dark:hover:text-purple-400",
-	pagibig:
-		"hover:bg-yellow-50 dark:hover:bg-yellow-400/15 hover:text-yellow-700 dark:hover:text-yellow-400",
-	tax: "hover:bg-red-50 dark:hover:bg-red-400/15 hover:text-red-700 dark:hover:text-red-400",
-	other:
-		"hover:bg-blue-50 dark:hover:bg-blue-400/15 hover:text-blue-700 dark:hover:text-blue-400",
-};
-
-const References = () => {
-	return (
-		<div className="max-w-4xl w-full px-2 mb-8">
-			<div className="relative mb-6">
-				<div className="absolute inset-0 flex items-center">
-					<div className="w-full border-t border-neutral-200 dark:border-neutral-800"></div>
-				</div>
-				<div className="relative flex justify-left">
-					<span className="px-4 text-sm font-medium bg-neutral-50 dark:bg-neutral-900 text-neutral-500 dark:text-neutral-400">
-						References
-					</span>
-				</div>
-			</div>
-
-			<div className="card p-5">
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-					{REFERENCE_LINKS.map((link) => (
-						<a
-							key={link.title}
-							href={link.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							className={`block min-w-0 p-3 rounded-lg border bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 ${HOVER_CLASSES_BY_CATEGORY[link.category]}`}
-						>
-							<div className="font-medium text-sm mb-1">{link.title}</div>
-							<div className="text-xs text-neutral-500 dark:text-neutral-400">
-								{link.subtitle}
-							</div>
-						</a>
-					))}
-				</div>
-			</div>
-		</div>
-	);
-};
+const References = () => (
+	<section
+		aria-labelledby="references-heading"
+		className="mt-12 border-t border-line pt-8"
+	>
+		<h2 id="references-heading" className="mb-4 text-sm font-medium text-fg">
+			References
+		</h2>
+		<ul className="grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+			{REFERENCE_LINKS.map((link) => (
+				<li key={link.title} className="min-w-0">
+					<a
+						href={link.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="-mx-3 block rounded-lg px-3 py-2 hover:bg-sunken"
+					>
+						<span className="block text-sm font-medium text-fg">
+							{link.title}
+						</span>
+						<span className="block text-xs text-muted">{link.subtitle}</span>
+					</a>
+				</li>
+			))}
+		</ul>
+	</section>
+);
 
 export default References;

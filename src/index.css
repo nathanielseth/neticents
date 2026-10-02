@@ -1,84 +1,80 @@
 @import "tailwindcss";
+@import "@fontsource-variable/inter/wght.css";
 
-@custom-variant dark (&:where(.dark, .dark *));
+:root {
+  --page: #f8fafc;
+  --surface: #ffffff;
+  --raised: #ffffff;
+  --sunken: rgb(15 23 42 / 0.06);
+  --line: rgb(15 23 42 / 0.1);
+  --field: #ffffff;
+  --field-line: #cbd5e1;
+  --fg: #0f172a;
+  --muted: #475569;
+  --warn: #b45309;
+  --accent: #3457c9;
+  color-scheme: light;
+}
 
-@theme {
-  --font-family-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+.dark {
+  --page: #0f172a;
+  --surface: #1e293b;
+  --raised: #334155;
+  --sunken: rgb(255 255 255 / 0.07);
+  --line: rgb(255 255 255 / 0.1);
+  --field: #1e293b;
+  --field-line: #334155;
+  --fg: #f1f5f9;
+  --muted: #94a3b8;
+  --warn: #fbbf24;
+  --accent: #8aa5f0;
+  color-scheme: dark;
+}
 
-  --color-neutral-50: #f8fafc;
-  --color-neutral-100: #f1f5f9;
-  --color-neutral-200: #e2e8f0;
-  --color-neutral-300: #cbd5e1;
-  --color-neutral-400: #94a3b8;
-  --color-neutral-500: #64748b;
-  --color-neutral-600: #475569;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #1e293b;
-  --color-neutral-900: #0f172a;
-  --color-neutral-950: #020617;
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-line: var(--line);
+  --color-field: var(--field);
+  --color-field-line: var(--field-line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-warn: var(--warn);
+  --color-accent: var(--accent);
 
   --color-brand: #4169e1;
   --color-brand-hover: #3457c9;
 }
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-fg);
+  }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
-  
-  html {
-    font-family: var(--font-family-sans);
-  }
-}
 
-@layer components {
-  .card {
-    @apply rounded-2xl border border-neutral-200 dark:border-neutral-800;
-    @apply bg-white dark:bg-neutral-800;
-    box-shadow:
-      0 1px 2px rgba(15, 23, 42, 0.04),
-      0 8px 24px -12px rgba(15, 23, 42, 0.12);
-  }
-  .dark .card {
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.2),
-      0 8px 24px -12px rgba(0, 0, 0, 0.4);
+  .theme-switching,
+  .theme-switching *,
+  .theme-switching *::before,
+  .theme-switching *::after {
+    transition: none !important;
   }
 
-  .btn {
-    @apply py-2.5 px-3 border rounded-lg cursor-pointer font-medium text-sm;
-    @apply bg-neutral-100 border-neutral-200 text-neutral-700;
-    @apply dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-300;
-    @apply hover:bg-neutral-200 hover:border-neutral-300;
-    @apply dark:hover:bg-neutral-800 dark:hover:border-neutral-600;
-  }
-
-  .btn-active {
-    @apply bg-brand text-white border-brand;
-    @apply hover:bg-brand-hover hover:border-brand-hover;
-  }
-
-  .input-wrapper {
-    @apply flex items-center mt-2;
-  }
-
-  .input-field {
-    @apply w-full p-2.5 border rounded-lg focus:outline-none font-medium;
-    @apply bg-white border-neutral-200 text-neutral-900;
-    @apply dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-100;
-    @apply focus:ring-2 focus:ring-brand/40 focus:border-brand;
-    @apply placeholder:text-neutral-400 dark:placeholder:text-neutral-500;
-
-    &:disabled {
-      @apply bg-neutral-100 text-neutral-400 cursor-not-allowed border-neutral-200;
-      @apply dark:bg-neutral-900 dark:text-neutral-600 dark:border-neutral-800;
-      @apply placeholder:text-neutral-400 dark:placeholder:text-neutral-500;
-    }
-  }
-
-  .label {
-    @apply block text-sm font-medium mb-2;
-    @apply text-neutral-700 dark:text-neutral-200;
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
   }
 }

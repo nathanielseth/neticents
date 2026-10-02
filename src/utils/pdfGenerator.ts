@@ -1,6 +1,10 @@
 import jsPDF from "jspdf";
-import type { Sector, TaxResults } from "../types";
-import { DEDUCTION_META, type DeductionKey } from "./deductionMeta";
+import type { PremiumDayType, Sector, TaxResults } from "../types";
+import { deductionLabel } from "./deductionMeta";
+import {
+	DE_MINIMIS_MONTHLY_LIMIT,
+	EXEMPT_BENEFITS_ANNUAL_CAP,
+} from "./calculation";
 
 const SECTOR_NAMES: Record<Sector, string> = {
 	private: "Private Employee",
@@ -8,9 +12,13 @@ const SECTOR_NAMES: Record<Sector, string> = {
 	selfemployed: "Self-Employed",
 };
 
-function deductionLabel(key: string): string {
-	return DEDUCTION_META[key as DeductionKey]?.label ?? key;
-}
+const PREMIUM_DAY_NAMES: Record<PremiumDayType, string> = {
+	restDay: "Rest Day",
+	specialDay: "Special Non-Working Day",
+	specialRestDay: "Special Day on a Rest Day",
+	regularHoliday: "Regular Holiday",
+	holidayRestDay: "Regular Holiday on a Rest Day",
+};
 
 function formatCurrency(value: number): string {
 	return `P${value.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -31,10 +39,10 @@ export const generateTaxSummaryPDF = async (
 		visibleDeductions,
 		totalDeductions,
 		premiumPay,
+		annualBenefits,
 		effectiveRate,
 	} = results;
-	const { salary, allowance, sector, overtimeHours, nightDifferentialHours } =
-		inputs;
+	const { salary, allowance, sector } = inputs;
 	const isSelfEmployed = sector === "selfemployed";
 
 	// header
@@ -65,10 +73,19 @@ export const generateTaxSummaryPDF = async (
 	y += 6;
 	row(pdf, y, pageWidth, "Monthly Basic Salary", formatCurrency(salary));
 	y += 6;
+	if (isSelfEmployed) {
+		row(
+			pdf,
+			y,
+			pageWidth,
+			"Income Tax Option",
+			results.appliedTaxRegime === "flat8" ? "8% Flat Rate" : "Graduated Rates",
+		);
+		y += 6;
+	}
 
 	// income breakdown (if there's anything beyond base salary)
-	const hasPremium =
-		!isSelfEmployed && (overtimeHours > 0 || nightDifferentialHours > 0);
+	const hasPremium = premiumPay.totalPremiumPay > 0;
 	const hasExtras = hasPremium || allowance > 0;
 
 	if (hasExtras) {
@@ -79,38 +96,51 @@ export const generateTaxSummaryPDF = async (
 		pdf.setFontSize(10);
 		pdf.setTextColor(40, 40, 40);
 
-		if (overtimeHours > 0) {
-			row(
-				pdf,
-				y,
-				pageWidth,
-				`Overtime Pay (${overtimeHours} hrs)`,
-				formatCurrency(premiumPay.regularOvertimePay),
-			);
-			y += 6;
+		// hours are split so each pay line matches its own hours (overlap is paid once)
+		const { regularOvertimeHours, regularNightHours, overlapHours } =
+			premiumPay.breakdown;
+		const premiumLines: [string, number][] = [];
+		if (regularOvertimeHours > 0) {
+			premiumLines.push([
+				`Overtime Pay (${regularOvertimeHours} hrs)`,
+				premiumPay.regularOvertimePay,
+			]);
 		}
-		if (nightDifferentialHours > 0) {
-			row(
-				pdf,
-				y,
-				pageWidth,
-				`Night Differential Pay (${nightDifferentialHours} hrs)`,
-				formatCurrency(premiumPay.regularNightPay),
-			);
-			y += 6;
+		if (regularNightHours > 0) {
+			premiumLines.push([
+				`Night Differential (${regularNightHours} hrs @ ${Math.round(premiumPay.breakdown.rates.nightDiffPremium * 100)}%)`,
+				premiumPay.regularNightPay,
+			]);
 		}
-		if (premiumPay.nightOvertimePay > 0) {
-			row(
-				pdf,
-				y,
-				pageWidth,
-				"Night Overtime Premium",
-				formatCurrency(premiumPay.nightOvertimePay),
-			);
+		if (overlapHours > 0) {
+			premiumLines.push([
+				`Night Overtime (${overlapHours} hrs)`,
+				premiumPay.nightOvertimePay,
+			]);
+		}
+		for (const line of premiumPay.dayWork) {
+			const name =
+				sector === "public"
+					? "Rest Day / Holiday Work"
+					: PREMIUM_DAY_NAMES[line.type];
+			const detail = [
+				`${line.hours} hrs`,
+				line.overtimeHours > 0 ? `${line.overtimeHours} OT` : "",
+				line.nightHours > 0 ? `${line.nightHours} night` : "",
+			]
+				.filter(Boolean)
+				.join(", ");
+			premiumLines.push([`${name} (${detail})`, line.pay]);
+		}
+		for (const [label, amount] of premiumLines) {
+			row(pdf, y, pageWidth, label, formatCurrency(amount));
 			y += 6;
 		}
 		if (allowance > 0) {
-			const taxLabel = allowance > 7500 ? "Taxable" : "Non-Taxable";
+			const taxLabel =
+				allowance > DE_MINIMIS_MONTHLY_LIMIT
+					? "Excess Counted as Other Benefit"
+					: "Non-Taxable";
 			row(
 				pdf,
 				y,
@@ -132,7 +162,13 @@ export const generateTaxSummaryPDF = async (
 	pdf.setTextColor(40, 40, 40);
 
 	visibleDeductions.forEach(([key, value]) => {
-		row(pdf, y, pageWidth, deductionLabel(key), formatCurrency(value));
+		row(
+			pdf,
+			y,
+			pageWidth,
+			deductionLabel(key, sector, results.appliedTaxRegime),
+			formatCurrency(value),
+		);
 		y += 6;
 	});
 
@@ -177,7 +213,7 @@ export const generateTaxSummaryPDF = async (
 		y,
 		pageWidth,
 		"Annual Gross Income",
-		formatCurrency(grossIncome * 12),
+		formatCurrency(grossIncome * 12 + annualBenefits.yearEnd),
 	);
 	y += 6;
 	row(
@@ -193,15 +229,41 @@ export const generateTaxSummaryPDF = async (
 		y,
 		pageWidth,
 		"Annual Take Home Pay",
-		formatCurrency(takeHomePay * 12),
+		formatCurrency(takeHomePay * 12 + annualBenefits.yearEnd),
 	);
 	y += 6;
 
-	// 13th month (basic salary only)
+	// year-end benefits share one annual exclusion; only the excess is taxed
 	pdf.setFont("helvetica", "italic");
 	pdf.setFontSize(9);
 	pdf.setTextColor(80, 80, 80);
-	pdf.text(`Estimated 13th Month Pay: ${formatCurrency(salary)}`, 20, y);
+	if (annualBenefits.yearEnd > 0) {
+		const benefitLabel =
+			sector === "public"
+				? "Estimated Mid-Year/Year-End Bonus, Cash Gift & PEI"
+				: "Estimated 13th Month Pay";
+		pdf.text(`${benefitLabel}: ${formatCurrency(annualBenefits.yearEnd)}`, 20, y);
+		y += 5;
+		pdf.text(
+			`Taxable portion above the ${formatCurrency(EXEMPT_BENEFITS_ANNUAL_CAP)} exclusion: ${formatCurrency(annualBenefits.taxableExcess)}`,
+			20,
+			y,
+		);
+		y += 5;
+		pdf.text(
+			"Annual figures above cover 12 monthly payrolls plus this bonus pay.",
+			20,
+			y,
+		);
+	} else if (!isSelfEmployed && !inputs.includeThirteenthMonth) {
+		pdf.text(
+			sector === "public"
+				? "Year-end bonuses are not included in the annual figures above."
+				: "13th month pay is not included in the annual figures above.",
+			20,
+			y,
+		);
+	}
 	y += 16;
 
 	// disclaimer

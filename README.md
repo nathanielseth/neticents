@@ -16,11 +16,13 @@ A real-time Philippine income tax calculator that helps estimate salary deductio
 
 - **Withholding Tax** - computed against BIR's progressive tax brackets
 - **Mandatory Contributions** - SSS/GSIS, PhilHealth, and Pag-IBIG
-- **Premium Pay** - overtime and night differential
-- **De Minimis Benefits** - tax-free allowance handling up to the annual/monthly limit
+- **Premium Pay** - overtime, night differential, and holiday and rest-day work
+- **Self-Employed Tax Options** - graduated rates, or 8% flat rate
+- **De Minimis Benefits** - tax-free allowance up to the BIR ceiling
 - **Multiple Pay Periods** - view results as monthly, biweekly, or annual figures
 - **PDF Export** - generate and download a tax summary
 - **Installable PWA** - works offline once loaded, installable on desktop and mobile
+- **Remembers Your Inputs** - saved in your browser between visits
 
 ## Getting Started
 
@@ -86,7 +88,10 @@ for holidays, unique employer policies, or every edge case in Philippine labor l
 
 - [SSS Circular No. 2024-006](https://www.sss.gov.ph/wp-content/uploads/2024/12/Cir-2024-006-Employers-scaled.jpg)
 - [PhilHealth Circular No. 2019-0009](https://www.philhealth.gov.ph/partners/employers/ContributionTable_v2.pdf)
-- [Pag-IBIG Circular No. 460](https://www.philhealth.gov.ph/circulars/2019/circ2019-0009.pdf)
+- [Pag-IBIG Circular No. 460](https://www.pagibigfund.gov.ph/document/pdf/circulars/provident/Circular%20No.%20460%20-%20Guidelines%20on%20the%20Pag-IBIG%20Fund's%20Implementation%20of%20Increase%20in%20the%20MFS%20Effective%20February%202024.pdf)
+- [BIR RR No. 29-2025 (de minimis ceilings)](https://www.grantthornton.com.ph/insights/articles-and-updates1/tax-notes/updated-de-minimis-benefits-threshold/)
+- [RA 11701 IRR (government night differential)](https://www.csc.gov.ph/phocadownload/userupload/hrpso/issuances/RA11701/IRR%20RA%2011701.pdf)
+- [DOLE Handbook on Workers' Statutory Monetary Benefits](https://bwc.dole.gov.ph/wp-content/uploads/2024/10/Workers-Statutory-Monetary-Benefits-Handbook-2024-Edition.pdf)
 - [RA 8291, Section 11](https://www.gsis.gov.ph/about-us/gsis-laws/republic-act-no-8291/)
 - [BIR Withholding Tax](https://www.bir.gov.ph/WithHoldingTax)
 - [RA 10963 (TRAIN Law)](https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/2/80559)
