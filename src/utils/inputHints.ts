@@ -14,7 +14,7 @@ export interface Hint {
 }
 
 export const scheduleInfo = (): string =>
-	"Paid days a year (DOLE factor). Sets your hourly rate.";
+	"Sets your hourly rate.";
 
 export const deMinimisInfo = (): string =>
 	`Tax-free up to ${formatPeso(Math.round(DE_MINIMIS_MONTHLY_LIMIT), 0)}/mo (${formatPeso(DE_MINIMIS_ANNUAL_LIMIT, 0)}/yr). Excess counts toward the ${formatPeso(EXEMPT_BENEFITS_ANNUAL_CAP, 0)} benefits cap.`;

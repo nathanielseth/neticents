@@ -123,7 +123,11 @@ const NumberField = ({
 	return (
 		<div className="min-w-0">
 			{/* the label wraps only its text, so the info button is never mistaken for the control it labels */}
-			<div className={hideLabel ? "sr-only" : "mb-1.5 flex items-center gap-1"}>
+			<div
+				className={
+					hideLabel ? "sr-only" : "mb-1.5 flex items-center gap-0.5 whitespace-nowrap"
+				}
+			>
 				<label htmlFor={inputId}>
 					<FieldLabel>{label}</FieldLabel>
 				</label>

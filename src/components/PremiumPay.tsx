@@ -62,7 +62,7 @@ const PremiumPay = ({ inputs, setters }: PremiumPayProps) => {
 			)}
 
 			<div>
-				<div className="grid grid-cols-3 gap-3">
+				<div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)] items-end gap-2 sm:gap-3">
 					<NumberField
 						label="Overtime"
 						info={overtimeInfo()}

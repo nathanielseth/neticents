@@ -80,7 +80,7 @@ const InfoTip = ({ label, children, warn = false }: InfoTipProps) => {
 				ref={bubbleRef}
 				id={id}
 				role="tooltip"
-				className={`absolute top-full z-20 mt-1.5 w-60 max-w-[calc(100vw-2rem)] rounded-lg border border-line bg-raised px-3 py-2 text-xs leading-relaxed font-normal text-pretty shadow-md left-0 ${warn ? "text-warn" : "text-fg"} ${open ? "visible opacity-100" : "invisible opacity-0"} transition-opacity motion-reduce:transition-none`}
+				className={`absolute top-full z-20 mt-1.5 w-60 max-w-[calc(100vw-2rem)] whitespace-normal rounded-lg border border-line bg-raised px-3 py-2 text-xs leading-relaxed font-normal text-pretty shadow-md left-0 ${warn ? "text-warn" : "text-fg"} ${open ? "visible opacity-100" : "invisible opacity-0"} transition-opacity motion-reduce:transition-none`}
 			>
 				{children}
 			</span>
